@@ -1,0 +1,52 @@
+// ~/.config/xkb/symbols/cell
+// 基于 ～/.Xmodmap 移植
+
+default partial alphanumeric_keys
+xkb_symbols "basic" {
+    include "us(basic)"
+    name[Group1]= "CELL";
+
+    // --- 功能键改写 ---
+    key <CAPS> { [ Escape ] };      // CapsLock -> Escape
+    key <RTSH> { [ BackSpace ] };   // RightShift -> BackSpace
+    key <COMP> { [ BackSpace ] };   // 应用键/Menu -> BackSpace (keycode 62 映射逻辑)
+    key <ESC>  { [ Escape ] };      // 保持 Escape
+
+    // --- 字母区重排 (核心逻辑) ---
+    // 第一排 (QWERTY 位 -> CELL 位)
+    key <AD03> { [ d, D ] };        // E 位 -> D
+    key <AD04> { [ f, F ] };        // R 位 -> F
+    key <AD05> { [ semicolon, colon ] }; // T 位 -> ;
+    key <AD06> { [ slash, question ] };  // Y 位 -> /
+    key <AD07> { [ y, Y ] };        // U 位 -> Y
+    key <AD08> { [ g, G ] };        // I 位 -> G
+    key <AD09> { [ r, R ] };        // O 位 -> R
+    key <AD10> { [ p, P ] };        // P 位 -> P
+
+    // 第二排 (Home Row)
+    key <AC03> { [ e, E ] };        // D 位 -> E (与 E 位互换完成)
+    key <AC04> { [ t, T ] };        // F 位 -> T
+    key <AC05> { [ comma,  less ] };     // G 位 -> ,
+    key <AC06> { [ period, greater ] };  // H 位 -> .
+    key <AC07> { [ n, N ] };        // J 位 -> N
+    key <AC08> { [ i, I ] };        // K 位 -> I
+    key <AC09> { [ o, O ] };        // L 位 -> O
+    key <AC10> { [ u, U ] };        // ; 位 -> U
+
+    // 注意：z, x, c, v, b, m, h, j, k, l 在您的配置中似乎也通过 keycode 进行了平移
+    // 第三排 (Bottom Row)
+    key <AB01> { [ z, Z ] };        // Z
+    key <AB02> { [ x, X ] };        // X
+    key <AB03> { [ c, C ] };        // C
+    key <AB04> { [ v, V ] };        // V
+    key <AB05> { [ b, B ] };        // B
+    key <AB06> { [ m, M ] };        // N 位 -> M
+    key <AB07> { [ h, H ] };        // M 位 -> H
+    key <AB08> { [ j, J ] };        // , 位 -> J
+    key <AB09> { [ k, K ] };        // . 位 -> K
+    key <AB10> { [ l, L ] };        // / 位 -> L
+
+    // --- 其他特殊符号 ---
+    key <TLDE> { [ grave, asciitilde ] };
+    key <BKSL> { [ backslash, bar ] };
+};
