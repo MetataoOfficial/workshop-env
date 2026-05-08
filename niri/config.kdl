@@ -14,24 +14,24 @@ input {
             // 引用您在 ~/.config/xkb/symbols/ 下定义的 cell 文件
             layout "cell"
         }
-        
+
         // 核心：设置较快的重复频率，让全屏划动更利索
         repeat-delay 250
         repeat-rate 40
     }
-    
-    touchpad {
-        tap
-        // 允许三指横向划动切换窗口（物理感极强）
-        trackpad-scroll-generic-gestures-as-touchpad-scroll
-    }
+
+    // touchpad {
+    //     tap
+    //     // 允许三指横向划动切换窗口（物理感极强）
+    //     trackpad-scroll-generic-gestures-as-touchpad-scroll
+    // }
 }
 
 layout {
     // --- 100% 宽度全屏模式配置 ---
     // 每个新打开的窗口默认占据全屏
     default-column-width { proportion 1.0; }
-    
+
     // 居中当前焦点列，确保切换时始终位于屏幕中心
     center-focused-column "always"
 
@@ -54,7 +54,7 @@ animations {
 
 window-rule {
     // 确保所有非浮动窗口遵循 100% 宽度的逻辑
-    match { is-floating false; }
+    // match { is-floating false; }
     default-column-width { proportion 1.0; }
 }
 
@@ -63,7 +63,7 @@ binds {
     // 根据 CELL 布局，H/J/K/L 对应物理位置
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
-    
+
     // --- 2. 逻辑跳转 (您要求的 Alt-Tab 记忆功能) ---
     // 快速回到上一个操作的窗口，无论它在轨道上的什么位置
     Mod+Tab { focus-window-previous; }
@@ -72,7 +72,7 @@ binds {
     // 像搬动幻灯片一样调整全屏窗口的顺序
     Mod+Shift+H { consume-or-expel-window-left; }
     Mod+Shift+L { consume-or-expel-window-right; }
-    
+
     // --- 4. 窗口状态管理 ---
     Mod+Q { close-window; }
     Mod+F { maximize-column; } // 切换最大化
@@ -83,7 +83,7 @@ binds {
     Mod+Return { spawn "emacsclient" "-c" "-a" "emacs"; }
     // 启动终端 (以 Manjaro 默认的为例)
     Mod+D { spawn "foot"; } // 或者 alacritty/kitty
-    
+
     // --- 6. 系统控制 ---
     Mod+Shift+E { quit; }
     Mod+Shift+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
@@ -95,3 +95,4 @@ binds {
 // 启动项
 spawn-at-startup "waybar"  // 建议配合 Waybar 显示状态栏
 spawn-at-startup "fcitx5"  // 输入法支持
+
