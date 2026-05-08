@@ -1,5 +1,5 @@
 // =============================================================================
-//           NIRI 现代实验室配置 (基于 i3wm 习惯更新)
+//           NIRI 现代实验室配置 (基于 i3wm 习惯 & Cell 布局)
 // =============================================================================
 
 input {
@@ -35,9 +35,17 @@ window-rule {
 
 binds {
     // --- 1. 核心导航 (保持物理位置习惯) ---
+    Mod+Tab { focus-window-previous; } // 您要求的跳转记忆功能 [cite: 6]
     Mod+H { focus-column-left; }  // [cite: 5, 27]
     Mod+L { focus-column-right; } // [cite: 27]
-    Mod+Tab { focus-window-previous; } // 您要求的跳转记忆功能 [cite: 6]
+    Mod+Left  { focus-column-left; }  // [cite: 5, 27]
+    Mod+Right { focus-column-right; } // [cite: 27]
+
+    // 使用 Mod + J/K 实现工作区的前后切换
+    Mod+J { focus-workspace-down; }
+    Mod+K { focus-workspace-up; }
+    Mod+Down { focus-workspace-down; }
+    Mod+Up   { focus-workspace-up; }
 
     // --- 2. 应用程序启动 (参照 i3wm 映射) ---
     // i3wm: $mod+Return 聚焦/启动终端
@@ -68,22 +76,22 @@ binds {
     Mod+Shift+O { move-column-to-workspace 3; }
     Mod+Shift+U { move-column-to-workspace 4; }
 
-    // 使用 Mod + J/K 实现工作区的前后切换
-    Mod+J { focus-workspace-down; }
-    Mod+K { focus-workspace-up; }
-
-    // 如果您想在移动的同时把当前窗口也带到新工作区：
-    Mod+Shift+J { move-column-to-workspace-down; }
-    Mod+Shift+K { move-column-to-workspace-up; }
-
     // --- 4. 窗口管理 ---
     Mod+Shift+C { close-window; } // 对应 i3 的 $moS+c kill [cite: 29]
-    Mod+E { maximize-column; }    // 对应 i3 的 $mod+e 全屏切换 [cite: 28]
-    Mod+F { toggle-window-floating; } // 对应 i3 的 $mod+f 浮动切换 [cite: 28]
+    Mod+Z { maximize-column; }    // 对应 i3 的 $mod+e 全屏切换 [cite: 28]
+    Mod+V { toggle-window-floating; } // 对应 i3 的 $mod+f 浮动切换 [cite: 28]
 
     // 移动全屏窗口在轨道上的顺序 [cite: 7]
     Mod+Shift+H { consume-or-expel-window-left; }
     Mod+Shift+L { consume-or-expel-window-right; }
+    Mod+Shift+Left  { consume-or-expel-window-left; }
+    Mod+Shift+Right { consume-or-expel-window-right; }
+
+    // 如果您想在移动的同时把当前窗口也带到新工作区：
+    Mod+Shift+J { move-column-to-workspace-down; }
+    Mod+Shift+K { move-column-to-workspace-up; }
+    Mod+Shift+Down { move-column-to-workspace-down; }
+    Mod+Shift+Up   { move-column-to-workspace-up; }
 
     // --- 5. 系统控制 (参照 i3wm 映射) ---
     // 音量与亮度控制 [cite: 25, 26]
@@ -98,7 +106,8 @@ binds {
 
     // 锁屏与休眠 (对应 i3 的 $moC+grave) [cite: 22, 44]
     Mod+Ctrl+Grave { spawn "i3lock" "-c" "000000"; }
-    Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; }
+    // Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; } // 休眠
+    // Mod+Ctrl+Shift+Grave { spawn "niri" "msg" "action" "quit"; } // 退出
 
     // 重载配置 [cite: 14]
     Mod+Shift+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
