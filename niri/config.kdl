@@ -1,44 +1,22 @@
 // =============================================================================
-//                         NIRI 现代实验室配置 (2026)
+//           NIRI 现代实验室配置 (基于 i3wm 习惯更新)
 // =============================================================================
-// 设计哲学：
-// 1. 负熵空间：100% 宽度，消除视觉碎片。
-// 2. 空间记忆：利用平滑平移定位文档、代码与终端。
-// 3. 兼容 CELL：适配 D/E 交换与特殊功能键映射。
-// =============================================================================
-// ~/.config/niri/config.kdl
 
 input {
     keyboard {
         xkb {
-            // 引用您在 ~/.config/xkb/symbols/ 下定义的 cell 文件
-            layout "cell"
+            layout "cell" // 保持您的 CELL 布局 [cite: 1]
         }
-
-        // 核心：设置较快的重复频率，让全屏划动更利索
-        repeat-delay 250
-        repeat-rate 40
+        repeat-delay 250 // [cite: 2]
+        repeat-rate 40   // [cite: 2]
     }
-
-    // touchpad {
-    //     tap
-    //     // 允许三指横向划动切换窗口（物理感极强）
-    //     trackpad-scroll-generic-gestures-as-touchpad-scroll
-    // }
 }
 
 layout {
-    // --- 100% 宽度全屏模式配置 ---
-    // 每个新打开的窗口默认占据全屏
-    default-column-width { proportion 1.0; }
+    default-column-width { proportion 1.0; } // 保持您要求的 100% 宽度 [cite: 3]
+    center-focused-column "always"           // 保持焦点居中 [cite: 3]
+    gaps 1                                   // 参照 i3 配置：gaps inner 1px [cite: 24]
 
-    // 居中当前焦点列，确保切换时始终位于屏幕中心
-    center-focused-column "always"
-
-    // 视觉严谨：关闭间隙以获得纯净的全屏体验
-    gaps 0
-
-    // 边框设置：为了区分全屏下的边缘，可以使用细微的颜色提示
     focus-ring {
         width 2
         active-color "#7aa2f7"
@@ -46,53 +24,87 @@ layout {
     }
 }
 
-// 动画系统：物理反馈的关键
 animations {
-    // 略微加快滑动速度，减少等待感，同时保留位移方向感
     slowdown 1.2
 }
 
 window-rule {
-    // 确保所有非浮动窗口遵循 100% 宽度的逻辑
-    // match { is-floating false; }
-    default-column-width { proportion 1.0; }
+    // match { is-floating false; } // [cite: 4]
+    default-column-width { proportion 0.9; }
 }
 
 binds {
-    // --- 1. 核心导航 (使用您的自定义键位) ---
-    // 根据 CELL 布局，H/J/K/L 对应物理位置
-    Mod+H { focus-column-left; }
-    Mod+L { focus-column-right; }
+    // --- 1. 核心导航 (保持物理位置习惯) ---
+    Mod+H { focus-column-left; }  // [cite: 5, 27]
+    Mod+L { focus-column-right; } // [cite: 27]
+    Mod+Tab { focus-window-previous; } // 您要求的跳转记忆功能 [cite: 6]
 
-    // --- 2. 逻辑跳转 (您要求的 Alt-Tab 记忆功能) ---
-    // 快速回到上一个操作的窗口，无论它在轨道上的什么位置
-    Mod+Tab { focus-window-previous; }
+    // --- 2. 应用程序启动 (参照 i3wm 映射) ---
+    // i3wm: $mod+Return 聚焦/启动终端
+    Mod+Return { spawn "alacritty"; } // 对应 i3 的 $terminal_launcher [cite: 22]
 
-    // --- 3. 轨道管理 (移动窗口位置) ---
-    // 像搬动幻灯片一样调整全屏窗口的顺序
+    // i3wm: $mod+space 聚焦/启动浏览器
+    Mod+Space { spawn "vivaldi-stable"; } // 对应 i3 的 $browser_launcher [cite: 22]
+
+    // i3wm: $mod+Escape 聚焦/启动编辑器
+    Mod+Escape { spawn "emacs"; } // 对应 i3 的 $editor_launcher [cite: 22]
+
+    // i3wm: $mod+BackSpace 聚焦/启动文件管理器
+    Mod+BackSpace { spawn "nemo"; } // 对应 i3 的 $filer_launcher [cite: 22]
+
+    // 应用启动器 (对应 i3 的 $mod+x Rofi)
+    Mod+X { spawn "rofi" "-modi" "drun,run" "-show" "run"; }
+
+    // --- 3. 工作区管理 (移植 i3 的 n/i/o/u 逻辑) ---
+    // i3wm: $mod+n/i/o/u 切换到工作区 1/2/3/4
+    Mod+N { focus-workspace 1; }
+    Mod+I { focus-workspace 2; }
+    Mod+O { focus-workspace 3; }
+    Mod+U { focus-workspace 4; }
+
+    // i3wm: $moS+n/i/o/u 移动窗口到工作区 1/2/3/4
+    Mod+Shift+N { move-column-to-workspace 1; }
+    Mod+Shift+I { move-column-to-workspace 2; }
+    Mod+Shift+O { move-column-to-workspace 3; }
+    Mod+Shift+U { move-column-to-workspace 4; }
+
+    // 使用 Mod + J/K 实现工作区的前后切换
+    Mod+J { focus-workspace-down; }
+    Mod+K { focus-workspace-up; }
+
+    // 如果您想在移动的同时把当前窗口也带到新工作区：
+    Mod+Shift+J { move-column-to-workspace-down; }
+    Mod+Shift+K { move-column-to-workspace-up; }
+
+    // --- 4. 窗口管理 ---
+    Mod+Shift+C { close-window; } // 对应 i3 的 $moS+c kill [cite: 29]
+    Mod+E { maximize-column; }    // 对应 i3 的 $mod+e 全屏切换 [cite: 28]
+    Mod+F { toggle-window-floating; } // 对应 i3 的 $mod+f 浮动切换 [cite: 28]
+
+    // 移动全屏窗口在轨道上的顺序 [cite: 7]
     Mod+Shift+H { consume-or-expel-window-left; }
     Mod+Shift+L { consume-or-expel-window-right; }
 
-    // --- 4. 窗口状态管理 ---
-    Mod+Q { close-window; }
-    Mod+F { maximize-column; } // 切换最大化
-    Mod+Shift+F { fullscreen-window; } // 真正的全屏
+    // --- 5. 系统控制 (参照 i3wm 映射) ---
+    // 音量与亮度控制 [cite: 25, 26]
+    XF86AudioRaiseVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "+3%"; }
+    XF86AudioLowerVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "-3%"; }
+    XF86AudioMute        { spawn "pactl" "set-sink-mute"   "@DEFAULT_SINK@" "toggle"; }
+    XF86MonBrightnessUp   { spawn "brightnessctl" "set" "3%+"; }
+    XF86MonBrightnessDown { spawn "brightnessctl" "set" "3%-"; }
 
-    // --- 5. 常用应用启动 ---
-    // 启动您定制的 Emacs
-    Mod+Return { spawn "emacsclient" "-c" "-a" "emacs"; }
-    // 启动终端 (以 Manjaro 默认的为例)
-    Mod+D { spawn "foot"; } // 或者 alacritty/kitty
-
-    // --- 6. 系统控制 ---
-    Mod+Shift+E { quit; }
-    Mod+Shift+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
-
-    // 截图 (截取当前全屏逻辑块)
+    // 截图 (对应 i3 的 Print)
     Print { screenshot; }
+
+    // 锁屏与休眠 (对应 i3 的 $moC+grave) [cite: 22, 44]
+    Mod+Ctrl+Grave { spawn "i3lock" "-c" "000000"; }
+    Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; }
+
+    // 重载配置 [cite: 14]
+    Mod+Shift+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
 }
 
-// 启动项
-spawn-at-startup "waybar"  // 建议配合 Waybar 显示状态栏
-spawn-at-startup "fcitx5"  // 输入法支持
-
+// 启动项 [cite: 15]
+spawn-at-startup "waybar"  // 替代 i3bar [cite: 45]
+spawn-at-startup "fcitx5"  // 输入法
+spawn-at-startup "nm-applet" // 网络图标 [cite: 25]
