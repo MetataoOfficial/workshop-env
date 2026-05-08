@@ -44,7 +44,7 @@ binds {
     Mod+Return { spawn "alacritty"; } // 对应 i3 的 $terminal_launcher [cite: 22]
 
     // i3wm: $mod+space 聚焦/启动浏览器
-    Mod+Space { spawn "vivaldi-stable"; } // 对应 i3 的 $browser_launcher [cite: 22]
+    Mod+Space { spawn "firefox"; } // 对应 i3 的 $browser_launcher [cite: 22]
 
     // i3wm: $mod+Escape 聚焦/启动编辑器
     Mod+Escape { spawn "emacs"; } // 对应 i3 的 $editor_launcher [cite: 22]
