@@ -1,0 +1,26 @@
+# i3blocks configuration file
+# ~/.config/i3blocks/config
+# The i3blocks man page describes the usage of the binary,  and its
+# [website](https://vivien.github.io/i3blocks) describes the config.
+
+# Global properties
+separator=true
+separator_block_width=30
+
+[task]
+color=#F5AF30
+command=xprop -id $(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5) _NET_WM_NAME | awk '{title=$0; idx=index(title," = \""); if(idx>0){title=substr(title,idx+4,length(title)-(idx+4))}else{sub(/.*_NET_WM_NAME[^"]*"/,"",title); sub(/"$/,"",title)} unified_head_bytes=64; unified_tail_bytes=36; title_byte_len=length(title); if(title_byte_len <= (unified_head_bytes+unified_tail_bytes)){print title}else{head_part=substr(title,1,unified_head_bytes); tail_part=substr(title,title_byte_len-unified_tail_bytes+1,unified_tail_bytes); print head_part ".." tail_part}}'
+interval=1
+
+# # use xfce's power-manager icon, set it up manually
+# [batt]
+# color=#9BE3C9
+# command=(acpi -V | head -n1) | awk '{gsub(/Battery 0: /,""); print}'
+# interval=900
+# # update each 15 min.
+
+[time]
+color=#EA90E6
+command=date '+%y-%m-%d %W.%w %H:%M:%S'
+# command=date '+%m-%d %a %T'
+interval=1
