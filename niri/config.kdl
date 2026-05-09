@@ -25,7 +25,7 @@ layout {
 }
 
 animations {
-    slowdown 1.2
+    slowdown 1.1
 }
 
 window-rule {
@@ -115,8 +115,13 @@ binds {
 
 // 启动项 [cite: 15]
 spawn-at-startup "waybar"  // 替代 i3bar [cite: 45]
-spawn-at-startup "fcitx5"  // 输入法
+spawn-at-startup "fcitx-autostart" // 输入法
 spawn-at-startup "nm-applet" // 网络图标 [cite: 25]
+spawn-at-startup "pamac-tray"
+spawn-at-startup "xfce4-clipman"
+spawn-at-startup "xfce4-power-manager"
+spawn-at-startup "blueman-applet"
+spawn-at-startup "volumeicon"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 // spawn-at-startup "xrandr --output eDP-1 --mode 1920x1200 --rate 60"
 // spawn-at-startup "nitrogen --restore"
