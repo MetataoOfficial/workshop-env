@@ -35,7 +35,8 @@ window-rule {
 
 binds {
     // --- 1. 核心导航 (保持物理位置习惯) ---
-    Mod+Tab { focus-window-previous; } // 您要求的跳转记忆功能 [cite: 6]
+    Mod+Tab { spawn "rofi" "-show" "window"; }
+    // Mod+Tab { focus-window-previous; } // 您要求的跳转记忆功能 [cite: 6]
     Mod+H { focus-column-left; }  // [cite: 5, 27]
     Mod+L { focus-column-right; } // [cite: 27]
     Mod+Left  { focus-column-left; }  // [cite: 5, 27]
@@ -93,8 +94,7 @@ binds {
     Mod+Shift+Down { move-column-to-workspace-down; }
     Mod+Shift+Up   { move-column-to-workspace-up; }
 
-    // --- 5. 系统控制 (参照 i3wm 映射) ---
-    // 音量与亮度控制 [cite: 25, 26]
+    // --- 5. 系统控制 (参照 i3wm 映射) --- 音量与亮度控制 [cite: 25, 26]
     XF86AudioRaiseVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "+3%"; }
     XF86AudioLowerVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "-3%"; }
     XF86AudioMute        { spawn "pactl" "set-sink-mute"   "@DEFAULT_SINK@" "toggle"; }
@@ -105,7 +105,7 @@ binds {
     Print { screenshot; }
 
     // 锁屏与休眠 (对应 i3 的 $moC+grave) [cite: 22, 44]
-    Mod+Ctrl+Grave { spawn "i3lock" "-c" "000000"; }
+    Mod+Ctrl+Grave { spawn "swaylock" "-c" "000000"; }
     // Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; } // 休眠
     // Mod+Ctrl+Shift+Grave { spawn "niri" "msg" "action" "quit"; } // 退出
 
