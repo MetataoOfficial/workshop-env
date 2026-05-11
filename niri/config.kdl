@@ -49,10 +49,10 @@ binds {
     Mod+Right { focus-column-right; } // [cite: 27]
 
     // 使用 Mod + J/K 实现工作区的前后切换
-    Mod+J { focus-workspace-down; }
-    Mod+K { focus-workspace-up; }
-    Mod+Down { focus-workspace-down; }
-    Mod+Up   { focus-workspace-up; }
+    Mod+J { focus-window-or-workspace-down; }
+    Mod+K { focus-window-or-workspace-up; }
+    Mod+Down { focus-window-or-workspace-down; }
+    Mod+Up   { focus-window-or-workspace-up; }
 
     // --- 2. 应用程序启动 (参照 i3wm 映射) ---
     // i3wm: $mod+Return 聚焦/启动终端
