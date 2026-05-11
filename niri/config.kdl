@@ -17,6 +17,12 @@ layout {
     center-focused-column "always"           // 保持焦点居中 [cite: 3]
     gaps 1                                   // 参照 i3 配置：gaps inner 1px [cite: 24]
 
+    preset-column-widths {
+        proportion 0.3
+        proportion 0.6
+        proportion 0.9
+    }
+
     focus-ring {
         width 2
         active-color "#7aa2f7"
@@ -80,7 +86,7 @@ binds {
     // --- 4. 窗口管理 ---
     Mod+Shift+C { close-window; } // 对应 i3 的 $moS+c kill [cite: 29]
     Mod+Z { maximize-column; }    // 对应 i3 的 $mod+e 全屏切换 [cite: 28]
-    Mod+V { toggle-window-floating; } // 对应 i3 的 $mod+f 浮动切换 [cite: 28]
+    Mod+V { switch-preset-column-width; } // toggle-window-floating; } // 对应 i3 的 $mod+f 浮动切换 [cite: 28]
 
     // 移动全屏窗口在轨道上的顺序 [cite: 7]
     Mod+Shift+H { consume-or-expel-window-left; }
@@ -124,7 +130,7 @@ spawn-at-startup "blueman-applet"
 spawn-at-startup "volumeicon"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 // spawn-at-startup "xrandr --output eDP-1 --mode 1920x1200 --rate 60"
-// spawn-at-startup "nitrogen --restore"
+// spawn-at-startup "nitrogen --restore" // wallpaper
 spawn-at-startup "xfsettingsd"
-spawn-at-startup "systemctl xfce4-notifyd.service"
+spawn-at-startup "mako" //systemctl xfce4-notifyd.service"
 spawn-at-startup "/opt/v2rayN-linux-64.AppImage"
