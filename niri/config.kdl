@@ -5,17 +5,17 @@
 input {
     keyboard {
         xkb {
-            layout "cell" // 保持您的 CELL 布局 [cite: 1]
+            layout "cell" // 保持您的 CELL 布局
         }
-        repeat-delay 250 // [cite: 2]
-        repeat-rate 40   // [cite: 2]
+        repeat-delay 250
+        repeat-rate 40
     }
 }
 
 layout {
-    default-column-width { proportion 1.0; } // 保持您要求的 100% 宽度 [cite: 3]
-    center-focused-column "always"           // 保持焦点居中 [cite: 3]
-    gaps 1                                   // 参照 i3 配置：gaps inner 1px [cite: 24]
+    default-column-width { proportion 1.0; } // 保持要求的 100% 宽度
+    center-focused-column "always"           // 保持焦点居中
+    gaps 1                                   // 参照 i3 配置：gaps inner 1px
 
     preset-column-widths {
         proportion 0.3
@@ -35,18 +35,18 @@ animations {
 }
 
 window-rule {
-    // match { is-floating false; } // [cite: 4]
+    geometry-corner-radius 6
+    clip-to-geometry true
     default-column-width { proportion 0.9; }
 }
 
 binds {
     // --- 1. 核心导航 (保持物理位置习惯) ---
     Mod+Tab { spawn "rofi" "-show" "window"; }
-    // Mod+Tab { focus-window-previous; } // 您要求的跳转记忆功能 [cite: 6]
-    Mod+H { focus-column-left; }  // [cite: 5, 27]
-    Mod+L { focus-column-right; } // [cite: 27]
-    Mod+Left  { focus-column-left; }  // [cite: 5, 27]
-    Mod+Right { focus-column-right; } // [cite: 27]
+    Mod+H { focus-column-left; }
+    Mod+L { focus-column-right; }
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
 
     // 使用 Mod + J/K 实现工作区的前后切换
     Mod+J { focus-window-or-workspace-down; }
@@ -55,82 +55,88 @@ binds {
     Mod+Up   { focus-window-or-workspace-up; }
 
     // --- 2. 应用程序启动 (参照 i3wm 映射) ---
-    // i3wm: $mod+Return 聚焦/启动终端
-    Mod+Return { spawn "alacritty"; } // 对应 i3 的 $terminal_launcher [cite: 22]
+    Mod+Return { spawn "ghostty"; }
+    Mod+T { spawn "ghostty"; }
 
-    // i3wm: $mod+space 聚焦/启动浏览器
-    Mod+Space { spawn "firefox"; } // 对应 i3 的 $browser_launcher [cite: 22]
+    Mod+Space { spawn "firefox"; }
+    Mod+W { spawn "firefox"; }
 
-    // i3wm: $mod+Escape 聚焦/启动编辑器
-    Mod+Escape { spawn "emacs"; } // 对应 i3 的 $editor_launcher [cite: 22]
+    Mod+Escape { spawn "emacs"; }
+    Mod+E { spawn "emacs"; }
 
-    // i3wm: $mod+BackSpace 聚焦/启动文件管理器
-    Mod+BackSpace { spawn "nemo"; } // 对应 i3 的 $filer_launcher [cite: 22]
+    Mod+BackSpace { spawn "nemo"; }
+    Mod+F { spawn "nemo"; }
 
-    // 应用启动器 (对应 i3 的 $mod+x Rofi)
+    Mod+D { spawn "evince"; }
+
+    // 应用启动器
     Mod+X { spawn "rofi" "-modi" "drun,run" "-show" "run"; }
 
     // --- 3. 工作区管理 (移植 i3 的 n/i/o/u 逻辑) ---
-    // i3wm: $mod+n/i/o/u 切换到工作区 1/2/3/4
     Mod+N { focus-workspace 1; }
     Mod+I { focus-workspace 2; }
     Mod+O { focus-workspace 3; }
     Mod+U { focus-workspace 4; }
 
-    // i3wm: $moS+n/i/o/u 移动窗口到工作区 1/2/3/4
     Mod+Shift+N { move-column-to-workspace 1; }
     Mod+Shift+I { move-column-to-workspace 2; }
     Mod+Shift+O { move-column-to-workspace 3; }
     Mod+Shift+U { move-column-to-workspace 4; }
 
     // --- 4. 窗口管理 ---
-    Mod+Shift+C { close-window; } // 对应 i3 的 $moS+c kill [cite: 29]
-    Mod+Z { maximize-column; }    // 对应 i3 的 $mod+e 全屏切换 [cite: 28]
-    Mod+V { switch-preset-column-width; } // toggle-window-floating; } // 对应 i3 的 $mod+f 浮动切换 [cite: 28]
+    Mod+Shift+C { close-window; }
+    Mod+Z { maximize-column; }
+    Mod+V { switch-preset-column-width; }
 
-    // 移动全屏窗口在轨道上的顺序 [cite: 7]
     Mod+Shift+H { consume-or-expel-window-left; }
     Mod+Shift+L { consume-or-expel-window-right; }
     Mod+Shift+Left  { consume-or-expel-window-left; }
     Mod+Shift+Right { consume-or-expel-window-right; }
 
-    // 如果您想在移动的同时把当前窗口也带到新工作区：
     Mod+Shift+J { move-column-to-workspace-down; }
     Mod+Shift+K { move-column-to-workspace-up; }
     Mod+Shift+Down { move-column-to-workspace-down; }
     Mod+Shift+Up   { move-column-to-workspace-up; }
 
-    // --- 5. 系统控制 (参照 i3wm 映射) --- 音量与亮度控制 [cite: 25, 26]
+    // --- 5. 系统控制 --- 音量与亮度控制
     XF86AudioRaiseVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "+3%"; }
     XF86AudioLowerVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "-3%"; }
     XF86AudioMute        { spawn "pactl" "set-sink-mute"   "@DEFAULT_SINK@" "toggle"; }
     XF86MonBrightnessUp   { spawn "brightnessctl" "set" "3%+"; }
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "3%-"; }
 
-    // 截图 (对应 i3 的 Print)
     Print { screenshot; }
 
-    // 锁屏与休眠 (对应 i3 的 $moC+grave) [cite: 22, 44]
+    // 锁屏与休眠
     Mod+Ctrl+Grave { spawn "swaylock" "-c" "000000"; }
-    // Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; } // 休眠
-    // Mod+Ctrl+Shift+Grave { spawn "niri" "msg" "action" "quit"; } // 退出
+    Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; }
 
-    // 重载配置 [cite: 14]
-    Mod+Shift+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
+    // 重载配置
+    Mod+Ctrl+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
 }
 
-// 启动项 [cite: 15]
-spawn-at-startup "waybar"  // 替代 i3bar [cite: 45]
-spawn-at-startup "fcitx-autostart" // 输入法
-spawn-at-startup "nm-applet" // 网络图标 [cite: 25]
-spawn-at-startup "pamac-tray"
-spawn-at-startup "xfce4-clipman"
-spawn-at-startup "xfce4-power-manager"
-spawn-at-startup "blueman-applet"
-spawn-at-startup "volumeicon"
+// =============================================================================
+//                               启动项 (Autostart)
+// =============================================================================
+
+// 1. 初始化核心环境 (注入核心变量，但不强制 IM_MODULE 以遵循 Wayland 原生协议)
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP" "DISPLAY"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-// spawn-at-startup "xrandr --output eDP-1 --mode 1920x1200 --rate 60"
-// spawn-at-startup "nitrogen --restore" // wallpaper
-spawn-at-startup "xfsettingsd"
-spawn-at-startup "mako" //systemctl xfce4-notifyd.service"
-spawn-at-startup "/opt/v2rayN-linux-64.AppImage"
+
+// 2. UI 组件
+spawn-at-startup "waybar"
+spawn-at-startup "mako"
+// spawn-at-startup "xfsettingsd" // 如果没有特定 GTK 主题同步问题，建议注释掉以减少冲突
+
+// 3. 核心应用托盘 (Fcitx5 建议在后台运行)
+spawn-at-startup "fcitx5" "-d" "--replace"
+spawn-at-startup "nm-applet" "--indicator"
+spawn-at-startup "blueman-applet"
+spawn-at-startup "pamac-tray"
+
+// 4. 电量管理 (使用 --no-daemon 模式并置于 dbus 启动后)
+spawn-at-startup "xfce4-power-manager" "--no-daemon"
+
+// 备选/注释项
+// spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
+// spawn-at-startup "swww-daemon" // 如需动态壁纸可启用
