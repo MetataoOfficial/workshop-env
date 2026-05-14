@@ -15,7 +15,7 @@ input {
 layout {
     default-column-width { proportion 1.0; } // 保持要求的 100% 宽度
     center-focused-column "always"           // 保持焦点居中
-    gaps 1                                   // 参照 i3 配置：gaps inner 1px
+    gaps 1                                   // 参照 i3 配置: gaps inner 1px
 
     preset-column-widths {
         proportion 0.3
@@ -24,9 +24,9 @@ layout {
     }
 
     focus-ring {
-        width 2
-        active-color "#7aa2f7"
-        inactive-color "#414868"
+        width 1
+        active-gradient from="#9f3e04" to="#9f6717" angle=45
+        inactive-color "#2f2a24"
     }
 }
 
@@ -136,6 +136,9 @@ spawn-at-startup "pamac-tray"
 
 // 4. 电量管理 (使用 --no-daemon 模式并置于 dbus 启动后)
 spawn-at-startup "xfce4-power-manager" "--no-daemon"
+
+// 5. 设置屏幕分辨率
+spawn-at-startup "xrandr" "--output" "eDP-1" "--mode" "1920x1200" "--rate" "60"
 
 // 备选/注释项
 // spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
