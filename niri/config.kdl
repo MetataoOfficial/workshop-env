@@ -2,6 +2,10 @@
 //           NIRI 现代实验室配置 (基于 i3wm 习惯 & Cell 布局)
 // =============================================================================
 
+// Refs::
+// https://github.com/niri-wm/niri/blob/main/resources/default-config.kdl
+// https://github.com/niri-wm/niri/wiki/Configuration:-Key-Bindings
+
 input {
     keyboard {
         xkb {
@@ -113,6 +117,17 @@ binds {
 
     // 重载配置
     Mod+Ctrl+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
+
+    // preview the list of important hotkeys.
+    Mod+P { show-hotkey-overlay; }
+
+    // show the Overview: a zoomed-out view of workspaces and windows.
+    // You can also move the mouse into the top-left hot corner,
+    // or do a four-finger swipe up on a touchpad.
+    Mod+S repeat=false { toggle-overview; }
+
+    // fast close by mouse
+    Mod+MouseMiddle  { close-window; }
 }
 
 // =============================================================================
