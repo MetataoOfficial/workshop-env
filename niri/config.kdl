@@ -19,7 +19,7 @@ input {
 layout {
     default-column-width { proportion 1.0; } // 保持要求的 100% 宽度
     center-focused-column "always"           // 保持焦点居中
-    gaps 1                                   // 参照 i3 配置: gaps inner 1px
+    gaps 10                                  // 参照 i3 配置: gaps inner 1px
 
     preset-column-widths {
         proportion 0.3
@@ -28,8 +28,8 @@ layout {
     }
 
     focus-ring {
-        width 1
-        active-gradient from="#9f3e04" to="#9f6717" angle=45
+        width 5
+        active-color "#644264" // active-gradient from="#9f3e04" to="#9f6717" angle=45
         inactive-color "#2f2a24"
     }
 }
@@ -46,7 +46,10 @@ window-rule {
 
 binds {
     // --- 1. 核心导航 (保持物理位置习惯) ---
-    Mod+Tab { spawn "rofi" "-show" "window"; }
+    // show the Overview: a zoomed-out view of workspaces and windows.
+    // You can also move the mouse into the top-left hot corner,
+    // or do a four-finger swipe up on a touchpad.
+    Mod+Tab repeat=false { toggle-overview; }
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
     Mod+Left  { focus-column-left; }
@@ -121,10 +124,7 @@ binds {
     // preview the list of important hotkeys.
     Mod+P { show-hotkey-overlay; }
 
-    // show the Overview: a zoomed-out view of workspaces and windows.
-    // You can also move the mouse into the top-left hot corner,
-    // or do a four-finger swipe up on a touchpad.
-    Mod+S repeat=false { toggle-overview; }
+    Mod+S { spawn "rofi" "-show" "window"; }
 
     // fast close by mouse
     Mod+MouseMiddle  { close-window; }
