@@ -18,7 +18,7 @@ input {
 
 layout {
     default-column-width { proportion 1.0; } // 保持要求的 100% 宽度
-    center-focused-column "always"           // 保持焦点居中
+    center-focused-column "never"            // 保持焦点居中
     gaps 10                                  // 参照 i3 配置: gaps inner 1px
 
     preset-column-widths {
@@ -41,7 +41,7 @@ animations {
 window-rule {
     geometry-corner-radius 6
     clip-to-geometry true
-    default-column-width { proportion 0.9; }
+    default-column-width { proportion 0.6; }
 }
 
 binds {
@@ -61,6 +61,16 @@ binds {
     Mod+Down { focus-window-or-workspace-down; }
     Mod+Up   { focus-window-or-workspace-up; }
 
+    Mod+Home { focus-column-first; }
+    Mod+End  { focus-column-last; }
+    Mod+Shift+Home { move-column-to-first; }
+    Mod+Shift+End  { move-column-to-last; }
+
+    Mod+Page_Down { focus-window-down; }
+    Mod+Page_Up   { focus-window-up; }
+    Mod+Shift+Page_Down { move-window-down; }
+    Mod+Shift+Page_Up   { move-window-up; }
+
     // --- 2. 应用程序启动 (参照 i3wm 映射) ---
     Mod+Return { spawn "ghostty"; }
     Mod+T { spawn "ghostty"; }
@@ -68,8 +78,8 @@ binds {
     Mod+Space { spawn "firefox"; }
     Mod+W { spawn "firefox"; }
 
-    Mod+Escape { spawn "emacs"; }
-    Mod+E { spawn "emacs"; }
+    Mod+Escape { spawn "zed"; }
+    Mod+E { spawn "zed"; }
 
     Mod+BackSpace { spawn "nemo"; }
     Mod+F { spawn "nemo"; }
@@ -77,7 +87,7 @@ binds {
     Mod+D { spawn "evince"; }
 
     // 应用启动器
-    Mod+X { spawn "rofi" "-modi" "drun,run" "-show" "run"; }
+    Mod+X { spawn "xfce4-appfinder"; }
 
     // --- 3. 工作区管理 (移植 i3 的 n/i/o/u 逻辑) ---
     Mod+N { focus-workspace 1; }
@@ -105,6 +115,17 @@ binds {
     Mod+Shift+Down { move-column-to-workspace-down; }
     Mod+Shift+Up   { move-column-to-workspace-up; }
 
+    Mod+Shift+WheelScrollDown      { focus-column-right; }
+    Mod+Shift+WheelScrollUp        { focus-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+
+    // Finer height adjustments when in column with other windows.
+    Mod+Minus { set-window-height "-15%"; }
+    Mod+Equal { set-window-height "+15%"; }
+    Mod+BracketLeft { set-column-width "-15%"; }
+    Mod+BracketRight { set-column-width "+15%"; }
+
     // --- 5. 系统控制 --- 音量与亮度控制
     XF86AudioRaiseVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "+3%"; }
     XF86AudioLowerVolume { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "-3%"; }
@@ -113,6 +134,8 @@ binds {
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "3%-"; }
 
     Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
 
     // 锁屏与休眠
     Mod+Ctrl+Grave { spawn "swaylock" "-c" "000000"; }
@@ -120,15 +143,18 @@ binds {
 
     // 重载配置
     Mod+Ctrl+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
+    Mod+Ctrl+Q { quit; }
 
     // preview the list of important hotkeys.
     Mod+P { show-hotkey-overlay; }
 
-    Mod+S { spawn "rofi" "-show" "window"; }
+    Mod+S { focus-window-previous; }
 
     // fast close by mouse
     Mod+MouseMiddle  { close-window; }
 }
+
+screenshot-path "~/Pictures/Screenshots/Screenshot_%Y-%m-%d_%H-%M-%S.png"
 
 // =============================================================================
 //                               启动项 (Autostart)
