@@ -40,6 +40,32 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 })
 
 ----------------------------------------------------------------------
+-- GUI font (Neovide 等 GUI 前端生效，终端 nvim 会忽略)
+----------------------------------------------------------------------
+vim.o.guifont = "Hack Nerd Font:h14"
+
+-- Neovide 专属设置
+if vim.g.neovide then
+  vim.g.neovide_padding_top    = 8
+  vim.g.neovide_padding_bottom = 8
+  vim.g.neovide_padding_left   = 8
+  vim.g.neovide_padding_right  = 8
+
+  vim.g.neovide_cursor_animation_length = 0.05
+  vim.g.neovide_cursor_trail_size       = 0.2
+  vim.g.neovide_refresh_rate            = 60   -- 屏幕高刷可改成 120/144
+
+  -- Ctrl +/- 调字号，Ctrl 0 复位（很实用）
+  local function set_font(size)
+    vim.o.guifont = ("Hack Nerd Font:h%d"):format(size)
+  end
+  local font_size = 14
+  vim.keymap.set("n", "<C-=>", function() font_size = font_size + 1; set_font(font_size) end)
+  vim.keymap.set("n", "<C-->", function() font_size = math.max(6, font_size - 1); set_font(font_size) end)
+  vim.keymap.set("n", "<C-0>", function() font_size = 14; set_font(font_size) end)
+end
+
+----------------------------------------------------------------------
 -- plugins (vim.pack, 0.12 内置)
 ----------------------------------------------------------------------
 vim.pack.add({
@@ -69,6 +95,11 @@ map("n", "<leader>fh", "<cmd>FzfLua help_tags<cr>")
 
 -- 配色
 vim.cmd.colorscheme("tokyonight-night")
+
+if vim.g.neovide then
+  vim.g.neovide_opacity = 0.9   -- 想不透明改成 1.0
+  vim.g.neovide_window_blurred = false
+end
 
 ----------------------------------------------------------------------
 -- LSP (内置，无需 nvim-lspconfig)
