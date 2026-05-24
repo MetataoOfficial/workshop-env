@@ -18,13 +18,16 @@ input {
 
 layout {
     default-column-width { proportion 1.0; } // 保持要求的 100% 宽度
-    center-focused-column "never"            // 保持焦点居中
+    // center-focused-column "on-overflow"      // 保持焦点居中
+    center-focused-column "never"      // 保持焦点居中
+    always-center-single-column
+
     gaps 10                                  // 参照 i3 配置: gaps inner 1px
 
     preset-column-widths {
-        proportion 0.3
-        proportion 0.6
-        proportion 0.9
+        proportion 0.35 // 0.3
+        proportion 0.65 // 0.6
+        // proportion 0.9
     }
 
     focus-ring {
@@ -41,7 +44,7 @@ animations {
 window-rule {
     geometry-corner-radius 6
     clip-to-geometry true
-    default-column-width { proportion 0.6; }
+    default-column-width { proportion 1.0; }
 }
 
 binds {
@@ -72,22 +75,22 @@ binds {
     Mod+Shift+Page_Up   { move-window-up; }
 
     // --- 2. 应用程序启动 (参照 i3wm 映射) ---
-    Mod+Return { spawn "ghostty"; }
-    Mod+T { spawn "ghostty"; }
+    Mod+Return cooldown-ms=300 { spawn "ghostty"; }
+    Mod+T cooldown-ms=300 { spawn "ghostty"; }
 
-    Mod+Space { spawn "firefox"; }
-    Mod+W { spawn "firefox"; }
+    Mod+Space cooldown-ms=300 { spawn "firefox"; }
+    Mod+W cooldown-ms=300 { spawn "firefox"; }
 
-    Mod+Escape { spawn "zed"; }
-    Mod+E { spawn "zed"; }
+    Mod+Escape cooldown-ms=300 { spawn "neovide"; }
+    Mod+E cooldown-ms=300 { spawn "neovide"; }
 
-    Mod+BackSpace { spawn "nemo"; }
-    Mod+F { spawn "nemo"; }
+    Mod+BackSpace cooldown-ms=300 { spawn "nemo"; }
+    Mod+F cooldown-ms=300 { spawn "nemo"; }
 
-    Mod+D { spawn "evince"; }
+    Mod+D cooldown-ms=300 { spawn "evince"; }
 
     // 应用启动器
-    Mod+X { spawn "xfce4-appfinder"; }
+    Mod+X repeat=false { spawn "xfce4-appfinder"; }
 
     // --- 3. 工作区管理 (移植 i3 的 n/i/o/u 逻辑) ---
     Mod+N { focus-workspace 1; }
@@ -101,9 +104,9 @@ binds {
     Mod+Shift+U { move-column-to-workspace 4; }
 
     // --- 4. 窗口管理 ---
-    Mod+Shift+C { close-window; }
+    Mod+Shift+C cooldown-ms=300 { close-window; }
     Mod+Z { maximize-column; }
-    Mod+V { switch-preset-column-width; }
+    Mod+V cooldown-ms=300 { switch-preset-column-width; }
 
     Mod+Shift+H { consume-or-expel-window-left; }
     Mod+Shift+L { consume-or-expel-window-right; }
@@ -148,10 +151,10 @@ binds {
     // preview the list of important hotkeys.
     Mod+P { show-hotkey-overlay; }
 
-    Mod+S { focus-window-previous; }
+    Mod+S repeat=false { focus-window-previous; }
 
     // fast close by mouse
-    Mod+MouseMiddle  { close-window; }
+    Mod+MouseMiddle repeat=false { close-window; }
 }
 
 screenshot-path "~/Pictures/Screenshots/Screenshot_%Y-%m-%d_%H-%M-%S.png"
