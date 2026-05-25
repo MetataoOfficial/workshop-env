@@ -180,6 +180,31 @@ if vim.g.neovide then
   vim.keymap.set("n", "<C-=>", function() font_size = font_size + 1; set_font(font_size) end)
   vim.keymap.set("n", "<C-->", function() font_size = math.max(6, font_size - 1); set_font(font_size) end)
   vim.keymap.set("n", "<C-0>", function() font_size = 14; set_font(font_size) end)
+
+  -- -- 关闭一些华而不实的特效
+  -- 真正值得关的：滚动动画（影响"快"的体感）
+  vim.g.neovide_scroll_animation_length = 0
+  vim.g.neovide_scroll_animation_far_lines = 0  -- 大跳转(gg/G)也瞬移
+
+  -- 光标动画压短即可，完全关掉反而看不清光标在哪
+  vim.g.neovide_cursor_animation_length = 0.05
+  vim.g.neovide_cursor_trail_size = 0.1
+  vim.g.neovide_cursor_vfx_mode = ""   -- 粒子特效，默认关
+
+  -- 模糊和透明：要美观就开，要纯净就关
+  vim.g.neovide_opacity = 0.85
+  vim.g.neovide_window_blurred = true
+  vim.g.neovide_floating_blur_amount_x = 1.0
+  vim.g.neovide_floating_blur_amount_y = 1.0
+
+  -- 高刷屏一定开（这才是真正影响流畅度的）
+  vim.g.neovide_refresh_rate = 60   -- 144Hz 屏改 144
+
+  -- 失焦时降帧，省电
+  vim.g.neovide_refresh_rate_idle = 5
+
+  -- 不需要打开
+  -- vim.g.neovide_profiler = false  -- 默认就是 false
 end
 
 ----------------------------------------------------------------------
