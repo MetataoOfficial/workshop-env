@@ -7,6 +7,10 @@
 // https://github.com/niri-wm/niri/wiki/Configuration:-Key-Bindings
 
 input {
+    // move mouse point the center of the target window
+    warp-mouse-to-focus mode="center-xy-always" // 鼠标自动居中
+    focus-follows-mouse // 💡
+
     keyboard {
         xkb {
             layout "cell" // 保持您的 CELL 布局
@@ -141,8 +145,9 @@ binds {
     Alt+Print { screenshot-window; }
 
     // 锁屏与休眠
-    Mod+Ctrl+Grave { spawn "swaylock" "-c" "000000"; }
-    Mod+Ctrl+Shift+Grave { spawn "systemctl" "suspend"; }
+    // Mod+Ctrl+Grave { spawn "gtklock"; } // { spawn "bash" "-c" "power-off-monitors && gtklock"; } // swaylock" "-c" "000000"; }
+    Mod+Ctrl+1 { spawn "sh" "-c" "gtklock & sleep 0.1 && niri msg action power-off-monitors"; } // Backslash
+    Mod+Ctrl+Shift+1 { spawn "systemctl" "suspend"; }
 
     // 重载配置
     Mod+Ctrl+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
@@ -169,7 +174,7 @@ spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 
 // 2. UI 组件
 spawn-at-startup "waybar"
-spawn-at-startup "mako"
+spawn-at-startup "mako" // Notification Daemon
 // spawn-at-startup "xfsettingsd" // 如果没有特定 GTK 主题同步问题，建议注释掉以减少冲突
 
 // 3. 核心应用托盘 (Fcitx5 建议在后台运行)
