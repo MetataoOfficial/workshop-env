@@ -51,12 +51,42 @@ window-rule {
     default-column-width { proportion 1.0; }
 }
 
+recent-windows {
+    // off
+    debounce-ms 750
+    open-delay-ms 150
+
+    highlight {
+        active-color "#999999ff"
+        urgent-color "#ff9999ff"
+        padding 30
+        corner-radius 0
+    }
+
+    previews {
+        max-height 480
+        max-scale 0.5
+    }
+
+    binds {
+        Mod+Tab         { next-window scope="workspace"; }
+        Mod+Shift+Tab   { previous-window scope="workspace"; }
+
+        Alt+Tab         { next-window; }
+        Alt+Shift+Tab   { previous-window; }
+        Alt+grave       { previous-window filter="app-id"; }
+        Alt+Shift+grave { next-window     filter="app-id"; }
+    }
+}
+
 binds {
     // --- 1. 核心导航 (保持物理位置习惯) ---
     // show the Overview: a zoomed-out view of workspaces and windows.
     // You can also move the mouse into the top-left hot corner,
     // or do a four-finger swipe up on a touchpad.
-    Mod+Tab repeat=false { toggle-overview; }
+    Mod+grave { toggle-overview; }
+    Mod+Shift+grave { toggle-overview; }
+
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
     Mod+Left  { focus-column-left; }
@@ -91,7 +121,7 @@ binds {
     Mod+BackSpace cooldown-ms=300 { spawn "nemo"; }
     Mod+F cooldown-ms=300 { spawn "nemo"; }
 
-    Mod+D cooldown-ms=300 { spawn "evince"; }
+    Mod+D cooldown-ms=300 { spawn "zathura"; }
 
     // 应用启动器
     Mod+X repeat=false { spawn "xfce4-appfinder"; }
@@ -145,7 +175,7 @@ binds {
     Alt+Print { screenshot-window; }
 
     // 锁屏与休眠
-    // Mod+Ctrl+Grave { spawn "gtklock"; } // { spawn "bash" "-c" "power-off-monitors && gtklock"; } // swaylock" "-c" "000000"; }
+    // Mod+Ctrl+1 { spawn "gtklock"; } // { spawn "bash" "-c" "power-off-monitors && gtklock"; } // swaylock" "-c" "000000"; }
     Mod+Ctrl+1 { spawn "sh" "-c" "gtklock & sleep 0.1 && niri msg action power-off-monitors"; } // Backslash
     Mod+Ctrl+Shift+1 { spawn "systemctl" "suspend"; }
 
@@ -192,3 +222,4 @@ spawn-at-startup "xrandr" "--output" "eDP-1" "--mode" "1920x1200" "--rate" "60"
 // 备选/注释项
 // spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
 // spawn-at-startup "swww-daemon" // 如需动态壁纸可启用
+
