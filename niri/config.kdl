@@ -72,8 +72,8 @@ recent-windows {
         Mod+Tab         { next-window scope="workspace"; }
         Mod+Shift+Tab   { previous-window scope="workspace"; }
 
-        Alt+Tab         { next-window; }
-        Alt+Shift+Tab   { previous-window; }
+        Alt+Tab         { next-window     scope="all"; }
+        Alt+Shift+Tab   { previous-window scope="all"; }
         Alt+grave       { previous-window filter="app-id"; }
         Alt+Shift+grave { next-window     filter="app-id"; }
     }
