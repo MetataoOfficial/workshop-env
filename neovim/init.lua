@@ -162,7 +162,7 @@ map("n", "<PageDown>", "}")
 map({"n", "x"}, ";", ":")
 map({"n", "x"}, ";;", ";")
 map("n", "<leader>/", "<cmd>noh<cr>", { silent = true })
-map("n", "\\", ":%s/%/gc<Left><Left><Left>", { desc = "Global replace with confirm" })
+map("n", "\\", ":%s/%/gc", { desc = "Global replace with confirm" })
 map("n", "<leader>cd", "<cmd>cd %:p:h<cr><cmd>pwd<cr>")
 map("n", "<leader>pp", "<cmd>setlocal paste!<cr>")
 map("n", "<F10>", "<cmd>setlocal spell!<cr>")
@@ -236,6 +236,29 @@ au("BufReadPost", {
   end,
 })
 
+-- 创建一个自动命令组，避免重复加载时叠加
+local autocd_group = vim.api.nvim_create_augroup("AutoCDGroup", { clear = true })
+
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+  group = autocd_group,
+  pattern = "*",
+  callback = function()
+    -- 获取当前缓冲区的类型和文件路径
+    local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
+    local file_path = vim.api.nvim_buf_get_name(0)
+
+    -- 排除非特殊文件缓冲区（如 terminal, nofile）并确保文件路径不为空
+    if buftype == "" and file_path ~= "" then
+      -- 提取文件所在的目录
+      local dir = vim.fs.dirname(file_path)
+      -- 检查目录是否存在，并切换
+      if vim.fn.isdirectory(dir) == 1 then
+        vim.api.nvim_set_current_dir(dir)
+      end
+    end
+  end,
+})
+
 -- 保存时自动清理尾随空格
 au("BufWritePre", {
   pattern = "*",
@@ -262,16 +285,28 @@ au({ "BufReadPre", "BufNewFile" }, {
 
 -- 自动化括号闭合与行尾分号/冒号映射
 -- 注意：变量名避开 Lua 内置全局函数 pairs，否则会抹掉迭代器导致启动报错
-local pair_map = { ["("] = ")", ["["] = "]", ["{"] = "}" }
-for open, close in pairs(pair_map) do
-  map("i", open, open .. close .. "<Left>", { noremap = true })
-  map("i", "<M-" .. open .. ">", open .. close .. "<Left>", { noremap = true })
-  -- 输入闭括号时如果前方已存在则直接越过
-  map("i", close, function()
-    local col = vim.api.nvim_win_get_cursor(0)[2]
+-- 自动化括号闭合与行尾分号/冒号映射
+local pair_match_map = { ["("] = ")", ["["] = "]", ["{"] = "}" }
+
+for open, close in pairs(pair_match_map) do
+  vim.keymap.set('i', open, function()
+    -- 获取当前行内容和当前光标的列号 (从 0 开始计数)
     local line = vim.api.nvim_get_current_line()
-    if line:sub(col + 1, col + 1) == close then return "<Right>" else return close end
-  end, { expr = true })
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+
+    -- 截取光标之后的文本
+    local after_cursor = string.sub(line, col + 1)
+
+    -- 使用 Lua 正则判断光标后是否全为空格/制表符，或者已经到行尾
+    -- ^%s*$ 匹配纯空白字符或空字符串
+    if string.match(after_cursor, "^%s*$") then
+      -- 在行尾：自动闭合，并将光标向左移动一格放到括号中间
+      return open .. close .. "<Left>"
+    else
+      -- 在行中：仅插入左括号，不自动闭合
+      return open
+    end
+  end, { expr = true, noremap = true, silent = true })
 end
 
 -- 快捷在行尾补齐常规符号并换行 (Alt + 符号)
@@ -340,12 +375,43 @@ vim.api.nvim_create_autocmd("FileType", {
 ----------------------------------------------------------------------
 -- 6. LaTeX 构建与跨平台 PDF 智能预览
 ----------------------------------------------------------------------
--- LaTeX 异步编译
+-- LaTeX 异步编译（安全优化版）
 map("n", "<leader>ll", function()
-  local file = vim.fn.expand("%:p")
-  vim.system({ "latexmk", "-xelatex", "-interaction=nonstopmode", file },
-    { detach = true, stdout = false, stderr = false })
-  print("LaTeX compiler triggered asynchronously.")
+  local file_path = vim.fn.expand("%:p")
+  if file_path == "" then
+    print("Error: Current buffer has no file path.")
+    return
+  end
+
+  -- 动态获取文件所在的绝对目录，彻底解决 auto change dir 的顾虑
+  local file_dir = vim.fs.dirname(file_path)
+  -- 打印提示，让心里有底
+  print("LaTeX compiler triggered asynchronously...")
+
+  vim.system(
+    {
+      "latexmk",
+      "-xelatex",
+      "-interaction=nonstopmode",
+      "-halt-on-error", -- 遇到致命错误立即停止，绝不阻塞后台
+      file_path
+    },
+    {
+      detach = true,
+      cwd = file_dir,   -- 强制将编译工作目录锁定在文件所在目录，缓存垃圾不乱飞
+      -- 将输出重定向到系统的黑洞，防止管道阻塞导致 GUI 卡死
+      stdout = function(_, _) end,
+      stderr = function(_, _) end
+    },
+    -- 编译结束后的回调（可选：可以在这里加上编译成功/失败的轻量通知）
+    function(obj)
+      if obj.code == 0 then
+        vim.schedule(function() print("✨ LaTeX compiled successfully!") end)
+      else
+        vim.schedule(function() print("❌ LaTeX compilation failed. Check your logs.") end)
+      end
+    end
+  )
 end)
 
 -- LaTeX PDF 智能预览路径识别 (<leader>lv)
@@ -383,7 +449,7 @@ if vim.g.neovide then
   vim.g.neovide_refresh_rate_idle = 5
 
   -- 核心响应速度调优
-  vim.g.neovide_scroll_animation_length = 0
+  vim.g.neovide_scroll_animation_length = 0.1
   vim.g.neovide_scroll_animation_far_lines = 0
   vim.g.neovide_cursor_animation_length = 0.05
   vim.g.neovide_cursor_trail_size = 0.1
@@ -427,4 +493,3 @@ vim.api.nvim_create_user_command("PluginUpdate", function()
 
   vim.notify("🎉 所有本地标准插件已成功同步至最新版本！", vim.log.levels.INFO)
 end, {})
-
