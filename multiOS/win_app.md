@@ -2,6 +2,8 @@
 
 Also ref: `install Linux as the 2nd OS`.
 
+- [coreutls](https://github.com/microsoft/coreutils)
+
 - firefox:
   + Absolute Enable Right Click
   + Tabliss
