@@ -9,7 +9,7 @@
 input {
     // move mouse point the center of the target window
     warp-mouse-to-focus mode="center-xy-always" // 鼠标自动居中
-    focus-follows-mouse // 💡
+    // focus-follows-mouse // 💡
 
     keyboard {
         xkb {
@@ -21,7 +21,6 @@ input {
 }
 
 layout {
-    default-column-width { proportion 1.0; } // 保持要求的 100% 宽度
     // center-focused-column "on-overflow"      // 保持焦点居中
     center-focused-column "never"      // 保持焦点居中
     always-center-single-column
@@ -48,7 +47,7 @@ animations {
 window-rule {
     geometry-corner-radius 6
     clip-to-geometry true
-    default-column-width { proportion 1.0; }
+    default-column-width { proportion 0.65; }
 }
 
 recent-windows {
@@ -64,7 +63,7 @@ recent-windows {
     }
 
     previews {
-        max-height 480
+        max-height 240 //480
         max-scale 0.5
     }
 
@@ -103,8 +102,8 @@ binds {
     Mod+Shift+Home { move-column-to-first; }
     Mod+Shift+End  { move-column-to-last; }
 
-    Mod+Page_Down { focus-window-down; }
-    Mod+Page_Up   { focus-window-up; }
+    Mod+Page_Down { focus-workspace-down; }
+    Mod+Page_Up   { focus-workspace-up; }
     Mod+Shift+Page_Down { move-window-down; }
     Mod+Shift+Page_Up   { move-window-up; }
 
@@ -152,10 +151,10 @@ binds {
     Mod+Shift+Down { move-column-to-workspace-down; }
     Mod+Shift+Up   { move-column-to-workspace-up; }
 
-    Mod+Shift+WheelScrollDown      { focus-column-right; }
-    Mod+Shift+WheelScrollUp        { focus-column-left; }
-    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
-    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+    Mod+WheelScrollDown { focus-workspace-down; }
+    Mod+WheelScrollUp   { focus-workspace-up; }
+    Mod+Shift+WheelScrollDown { move-window-down; }
+    Mod+Shift+WheelScrollUp   { move-window-up; }
 
     // Finer height adjustments when in column with other windows.
     Mod+Minus { set-window-height "-15%"; }
@@ -221,5 +220,4 @@ spawn-at-startup "xrandr" "--output" "eDP-1" "--mode" "1920x1200" "--rate" "60"
 
 // 备选/注释项
 // spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
-// spawn-at-startup "swww-daemon" // 如需动态壁纸可启用
-
+spawn-at-startup "awww-daemon" // 如需动态壁纸可启用
