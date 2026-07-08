@@ -6,6 +6,24 @@
 // https://github.com/niri-wm/niri/blob/main/resources/default-config.kdl
 // https://github.com/niri-wm/niri/wiki/Configuration:-Key-Bindings
 
+// =============================================================================
+//                             屏幕/显示器配置 (Outputs)
+// =============================================================================
+// 你可以通过运行 `niri msg outputs` 来查看你当前的屏幕名称和可用分辨率
+
+output "eDP-1" {
+    mode "1920x1200@60"  // 保持你原有的分辨率和刷新率
+    scale 1.5            // 缩放比例，如果是高分屏可以改为 1.25 或 1.5
+    position x=0 y=0
+}
+
+// 示例：添加你的第二个外接屏幕（请根据 niri msg outputs 的实际名字修改，比如 "HDMI-A-1"）
+output "HDMI-A-1" {
+    // mode "1920x1080@60" // 自动或指定分辨率
+    position x=-1920 y=0    // 将第二块屏幕放在主屏左侧
+    // position x=0 y=-1200    // 将第二块屏幕放在主屏上侧
+}
+
 input {
     // move mouse point the center of the target window
     warp-mouse-to-focus mode="center-xy-always" // 鼠标自动居中
@@ -126,15 +144,17 @@ binds {
     Mod+X repeat=false { spawn "xfce4-appfinder"; }
 
     // --- 3. 工作区管理 (移植 i3 的 n/i/o/u 逻辑) ---
-    Mod+N { focus-workspace 1; }
-    Mod+I { focus-workspace 2; }
-    Mod+O { focus-workspace 3; }
-    Mod+U { focus-workspace 4; }
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
 
-    Mod+Shift+N { move-column-to-workspace 1; }
-    Mod+Shift+I { move-column-to-workspace 2; }
-    Mod+Shift+O { move-column-to-workspace 3; }
-    Mod+Shift+U { move-column-to-workspace 4; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
 
     // --- 4. 窗口管理 ---
     Mod+Shift+C cooldown-ms=300 { close-window; }
@@ -189,6 +209,31 @@ binds {
 
     // fast close by mouse
     Mod+MouseMiddle repeat=false { close-window; }
+
+    // --- 6. 多屏幕/多显示器控制 (Outputs) ---
+    // 聚焦到其他的显示器
+     Mod+N     { focus-monitor-left; }
+     Mod+I     { focus-monitor-up; }
+     Mod+O     { focus-monitor-down; }
+     Mod+U     { focus-monitor-right; }
+     Mod+Ctrl+Left  { focus-monitor-left; }
+     Mod+Ctrl+Up    { focus-monitor-up; }
+     Mod+Ctrl+Down  { focus-monitor-down; }
+     Mod+Ctrl+Right { focus-monitor-right; }
+
+     // 将当前选中的窗口/列 移动到其他的显示器
+     Mod+Shift+N     { move-column-to-monitor-left; }
+     Mod+Shift+I     { move-column-to-monitor-up; }
+     Mod+Shift+O     { move-column-to-monitor-down; }
+     Mod+Shift+U     { move-column-to-monitor-right; }
+     Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+     Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
+     Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
+     Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+
+    // 快捷将整个工作区移动到另一个屏幕（可选）
+    // Mod+Ctrl+Page_Down { move-workspace-to-monitor-down; }
+    // Mod+Ctrl+Page_Up   { move-workspace-to-monitor-up; }
 }
 
 screenshot-path "~/Pictures/Screenshots/Screenshot_%Y-%m-%d_%H-%M-%S.png"
@@ -215,9 +260,10 @@ spawn-at-startup "pamac-tray"
 // 4. 电量管理 (使用 --no-daemon 模式并置于 dbus 启动后)
 spawn-at-startup "xfce4-power-manager" "--no-daemon"
 
-// 5. 设置屏幕分辨率
-spawn-at-startup "xrandr" "--output" "eDP-1" "--mode" "1920x1200" "--rate" "60"
+// // 5. 设置屏幕分辨率
+// spawn-at-startup "xrandr" "--output" "eDP-1" "--mode" "1920x1200" "--rate" "60"
 
 // 备选/注释项
-// spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
-spawn-at-startup "awww-daemon" // 如需动态壁纸可启用
+// // spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
+// spawn-at-startup "awww-daemon" // 如需动态壁纸可启用
+
