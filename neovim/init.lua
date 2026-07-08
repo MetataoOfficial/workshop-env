@@ -49,6 +49,12 @@ o.foldmethod   = "indent"
 o.foldlevel    = 99
 
 -- 其他性能与体验优化
+o.showcmd = true
+o.cursorcolumn = true
+o.timeoutlen = 400
+o.wildmenu = true
+o.switchbuf="useopen,usetab,newtab"
+
 o.clipboard    = "unnamedplus"
 o.splitright, o.splitbelow = true, true
 o.completeopt  = "menu,menuone,noselect,popup"
@@ -71,6 +77,7 @@ local plugins = {
   { name = "mini.comment",        src = "https://github.com/nvim-mini/mini.comment" },
   { name = "multicursor.nvim",    src = "https://github.com/jake-stewart/multicursor.nvim" },
   { name = "gitsigns.nvim",       src = "https://github.com/lewis6991/gitsigns.nvim" },
+  { name = "mini.starter",        src = "https://github.com/nvim-mini/mini.starter", },
 }
 
 local data_path = vim.fn.stdpath("data")
@@ -87,6 +94,17 @@ if vim.fn.isdirectory(start_dir .. "fzf-lua") == 0 then
   end
   vim.notify("🎉 插件已全部同步到位！", vim.log.levels.INFO)
 end
+
+-- for _, p in ipairs(plugins) do
+--     local path = start_dir .. p.name
+--
+--     if vim.fn.isdirectory(path) == 0 then
+--         print("Installing " .. p.name)
+--         vim.fn.system({"git", "clone", "--depth", "1", p.src, path,})
+--     end
+--
+--     vim.opt.runtimepath:append(path)
+-- end
 
 -- 核心修复点：绕过容易超时的 vim.pack.add，直接用原生 runtimepath 秒级挂载本地路径
 for _, p in ipairs(plugins) do
@@ -131,6 +149,25 @@ end)
 vim.cmd("syntax on")
 vim.cmd("filetype plugin indent on")
 
+-- ctrl+G 退出各种模式
+local map = vim.keymap.set
+--
+map("n", "<C-g>", "<Esc>")
+map("i", "<C-g>", "<Esc>")
+map("v", "<C-g>", "<Esc>")
+map("s", "<C-g>", "<Esc>")
+map("c", "<C-g>", "<C-c>")
+
+-- Ctrl+Z 等于 ：
+map("n", "<C-z>", ":")
+map("x", "<C-z>", ":")
+map("i", "<C-z>", "<C-o>:")
+
+-- 关闭一个窗口
+map("n", "<C-F4>", "<C-w>c")
+map("i", "<C-F4>", "<C-o><C-w>c")
+map("c", "<C-F4>", "<C-c><C-w>c")
+
 ----------------------------------------------------------------------
 -- 3. 快捷键映射 (Keymaps)
 ----------------------------------------------------------------------
@@ -159,13 +196,17 @@ map("n", "<PageUp>", "{")
 map("n", "<PageDown>", "}")
 
 -- 命令行与辅助快捷键
-map({"n", "x"}, ";", ":")
-map({"n", "x"}, ";;", ";")
+-- map({"n", "x"}, ";", ":")
+-- map({"n", "x"}, ";;", ";")
 map("n", "<leader>/", "<cmd>noh<cr>", { silent = true })
 map("n", "\\", ":%s/%/gc", { desc = "Global replace with confirm" })
 map("n", "<leader>cd", "<cmd>cd %:p:h<cr><cmd>pwd<cr>")
 map("n", "<leader>pp", "<cmd>setlocal paste!<cr>")
 map("n", "<F10>", "<cmd>setlocal spell!<cr>")
+
+-- ctrl+backspace/delete 快速删除前后的一个单词
+map("i","<C-BS>","<C-W>")
+map("i","<C-Del>","<C-o>dw")
 
 -- 窗口切换
 map("n", "<C-h>", "<C-w>h")
@@ -216,6 +257,22 @@ map("n", "<leader>ff", "<cmd>FzfLua files<cr>")
 map("n", "<leader>fg", "<cmd>FzfLua live_grep<cr>")
 map("n", "<leader>fb", "<cmd>FzfLua buffers<cr>")
 map("n", "<leader>fh", "<cmd>FzfLua help_tags<cr>")
+
+require("mini.starter").setup()
+
+-- F9 切换theme黑白
+local dark = true
+
+map("n","<F9>",function()
+    dark = not dark
+
+    if dark then
+        vim.cmd.colorscheme("tokyonight-night")
+    else
+        vim.cmd.colorscheme("tokyonight-day")
+    end
+
+end)
 
 ----------------------------------------------------------------------
 -- 4. 自动化行为 (Autocmds) & 括号智能处理
@@ -313,6 +370,29 @@ end
 map("i", "<M-=>", "<Esc>A;<Cr>")
 map("i", "<M-->", "<Esc>A:<Cr>")
 
+-- leader+左括号时，自动补全右括号
+local surround_pairs = {
+    ["("] = { "(", ")" },
+    ["["] = { "[", "]" },
+    ["{"] = { "{", "}" },
+    ['"'] = { '"', '"' },
+    ["'"] = { "'", "'" },
+    ["`"] = { "`", "`" },
+    ["$"] = { "$", "$" },
+    ["|"] = { "|", "|" },
+}
+
+for key, pair in pairs(surround_pairs) do
+    map("x", "<leader>" .. key, function()
+        local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+        vim.api.nvim_feedkeys(
+            esc .. "`>a" .. pair[2] .. esc .. "`<i" .. pair[1] .. esc,
+            "n",
+            false
+        )
+    end)
+end
+
 ----------------------------------------------------------------------
 -- 5. 内置 LSP 配置 (基于 0.12+ 标准原生架构，函数式结构彻底规避结合歧义)
 ----------------------------------------------------------------------
@@ -376,7 +456,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- 6. LaTeX 构建与跨平台 PDF 智能预览
 ----------------------------------------------------------------------
 -- LaTeX 异步编译（安全优化版）
-map("n", "<leader>ll", function()
+map("n", "<leader>tt", function()
   local file_path = vim.fn.expand("%:p")
   if file_path == "" then
     print("Error: Current buffer has no file path.")
