@@ -1,76 +1,157 @@
-### Niri WM 操作指南
+# Niri WM Keybindings
 
-#### 1. 窗口切换与画卷导航（Workspace 隔离与 Alt-Tab 面板）
+The keybindings are designed around three spatial layers:
 
-| 快捷键 | 功能 | 说明 |
-| --- | --- | --- |
-| `Mod + Tab` | **局部视轨切换 (核心)** | **只在当前 Workspace 一行内**，通过面板切换各个窗口 |
-| `Mod + Shift + Tab` | **局部视轨反向** | 在当前 Workspace 的面板中反向切换窗口 |
-| `Alt + Tab` | **全局窗口切换** | 跨 Workspace 唤醒面板，在全系统最近使用的窗口间切换 |
-| `Alt + Shift + Tab` | **全局窗口反向** | 跨 Workspace 全局反向切换窗口 |
-| `Alt + (Grave)` | **同应用过滤切换** | 在全局最近窗口中，**仅在相同 `app-id`（如同为终端）间**切换 |
-| `Mod + (Grave)` | **缩略图总览** | 切换到 Overview 视图（全局缩略图总览） |
-| `Mod + H / L` 或 `← / →` | 轨道滑动 | 在无限水平画卷中左右穿梭焦点 |
-| `Mod + J / K` 或 `↑ / ↓` | 垂直切换 | 在垂直堆叠的工作区或窗口间切换焦点 |
-| `Mod + S` | 窗口 Recall | 快速直接跳转至前一个活动窗口（不弹出面板） |
+- H / L : Columns (left / right)
+- J / K : Workspaces (up / down)
+- N / I / O / U : Monitors (left / up / down / right)
 
-#### 2. 工作区交互与布局控制
+History navigation:
 
-| 快捷键 | 功能 | 说明 |
-| --- | --- | --- |
-| `Mod + Page_Down / Up` | 纯工作区切换 | 强行直接向上/下切换工作区 |
-| `Mod + Shift + Page_Down / Up` | 窗口纵向移动 | 在单列内上下调整当前窗口的位置 |
-| `Mod + Home / End` | 视口首尾跳转 | 快速跳转至当前工作区最左侧（起点）或最右侧（终点） |
-| `Mod + Shift + Home / End` | 视轨整列搬运 | 将当前一整列窗口直接丢到工作区的最左侧或最右侧 |
-| `Mod + Equal(=) / Minus(-)` | 高度缩放 | 调整当前窗口的高度比例 ($\pm 15\%$) |
-| `Mod + [ / ]` | 宽度缩放 | 调整当前列（Column）的整体宽度 ($\pm 15\%$) |
-| `Mod + Z` | 最大化 | 列全屏 (Maximize Column) 状态切换 |
-| `Mod + V` | 宽度预设循环 | 视轨宽度在 **100% (默认) ↔ 35% ↔ 65%** 比例间循环切换 |
-| `Mod + Shift + H / L` | 视轨合并与剥离 | 向左/向右吞噬相邻窗口组成多窗口列，或将窗口剥离出去 |
-| `Mod + Shift + 鼠标滚轮` | 滚轮流控 | 快捷纵向切换焦点 |
+- S : Previous window
+- A : Previous workspace
 
-#### 3. 应用程序启动与管理（基于 i3wm 习惯）
+Workspace anchors:
 
-| 快捷键 (双通道映射) | 目标程序 | 备注 |
-| --- | --- | --- |
-| `Mod + Return` 或 `Mod + T` | **Ghostty** | 现代 GPU 加速高性能终端（防连击 300ms） |
-| `Mod + Space` 或 `Mod + W` | **Firefox** | 默认 Web 浏览器（防连击 300ms） |
-| `Mod + Escape` 或 `Mod + E` | **Neovide** | 优雅的 GUI 版 Neovim 编辑器（防连击 300ms） |
-| `Mod + BackSpace` 或 `Mod + F` | **Nemo** | 传统经典文件管理器（防连击 300ms） |
-| `Mod + D` | **zathura** | 文档/PDF 阅览器 |
-| `Mod + X` | **xfce4-appfinder** | 轻量级应用启动器（禁用按键连发） |
-| `Mod + Shift + C` | **关闭窗口** | 快速销毁当前聚焦的窗口（防连击 300ms） |
-| `Mod + 鼠标中键` | **盲切关闭** | 鼠标中键点击窗口快速关闭（禁用连发） |
+- Y : First workspace
+- G : Bottom (scratch) workspace
 
-#### 4. 工作区定点跳转（Workspace 1 - 5 标准映射）
+Applications:
 
-| 快捷键 | 功能 | 物理映射 |
-| --- | --- | --- |
-| `Mod + 1 ~ 5` | 切换工作区 | 聚焦至指定工作区 (1 / 2 / 3 / 4 / 5) |
-| `Mod + Shift + 1 ~ 5` | 盲转整列 | 将当前整列窗口移至指定工作区 (1 / 2 / 3 / 4 / 5) |
-| `Mod + Shift + J / K` 或 `Shift + ↓ / ↑` | 顺序列迁移 | 将当前整列窗口整体向下/向上搬运到相邻工作区 |
+- T : Terminal
+- W : Web
+- E : Editor
+- F : File manager
+- D : Document (PDF)
+- X : Launcher
 
-#### 5. 多屏幕/多显示器交互 (Outputs & Monitors)
+## 1. Navigation
 
-> 💡 **多显示器布局**：当前配置将外接屏 `HDMI-A-1` 放置于主屏 `eDP-1` (缩放 1.5) 的**左侧** (`x=-1920`)。工作区相互独立绑定在各自屏幕。
+### Column Navigation
 
-| 快捷键 | 功能 | 物理/逻辑映射 |
-| --- | --- | --- |
-| `Mod + n / i / o / u` | **跨屏焦点移动** | 基于 CELL 物理位置**移动窗口所在的显示器**（左 / 上 / 下 / 右） |
-| `Mod + Ctrl + 方向键` | **跨屏焦点移动** | 使用方向键**移动窗口所在的显示器**（左 / 上 / 下 / 右） |
-| `Mod + Shift + n / i / o / u` | **跨屏移动窗口** | 基于 CELL 键盘位移动窗口所在的显示器 |
-| `Mod + Shift + Ctrl + 方向键` | **跨屏移动窗口** | 使用方向键移动窗口所在的显示器 |
+| Key           | Action                |
+| ------------- | --------------------- |
+| `Mod + H / ←` | Focus left column     |
+| `Mod + L / →` | Focus right column    |
+| `Mod + Home`  | Focus first column    |
+| `Mod + End`   | Focus last column     |
+| `Mod + M`     | Center current column |
 
+### Workspace Navigation
 
-#### 6. 系统集成与电源管理
+| Key              | Action                                           |
+| ---------------- | ------------------------------------------------ |
+| `Mod + J / ↓`    | Focus next window/workspace                      |
+| `Mod + K / ↑`    | Focus previous window/workspace                  |
+| `Mod + PageDown` | Next workspace                                   |
+| `Mod + PageUp`   | Previous workspace                               |
+| `Mod + Y`        | Jump to workspace 1                              |
+| `Mod + G`        | Jump to workspace 9 (bottom / scratch workspace) |
+| `Mod + A`        | Return to previous workspace                     |
 
-| 快捷键 | 功能 | 说明 |
-| --- | --- | --- |
-| `Print` | 全屏截图 | 自动保存至 `~/Pictures/Screenshots/` 目录下 |
-| `Ctrl + Print` | 屏幕截图 | 针对多显示器环境的单屏截取 |
-| `Alt + Print` | 窗口截图 | 仅截取当前 activity 窗口 |
-| `Mod + P` | 快捷键备忘 | 弹窗覆盖显示当前所有活跃的快捷键清单 |
-| `Mod + Ctrl + 1` | **安全锁屏** | 调用 Gtklock 锁屏并随即关闭显示器背光 |
-| `Mod + Ctrl + Shift + 1` | **系统休眠** | 触发 systemctl suspend 挂起挂机 |
-| `Mod + Ctrl + R` | **平滑重载** | 执行过渡动画并刷新 `config.kdl` 配置（已废弃 xrandr） |
-| `Mod + Ctrl + Q` | **退出会话** | 优雅关闭并退出当前 Niri 桌面环境 |
+### Window History
+
+| Key                 | Action                             |
+| ------------------- | ---------------------------------- |
+| `Mod + S`           | Return to previous focused window  |
+| `Mod + Tab`         | Recent windows (current workspace) |
+| `Mod + Shift + Tab` | Recent windows (reverse)           |
+| `Alt + Tab`         | Recent windows (global)            |
+| `Alt + Shift + Tab` | Recent windows (global reverse)    |
+| `Alt + Grave`       | Cycle windows of same application  |
+| `Mod + Grave`       | Overview                           |
+
+---
+
+# 2. Workspace Management
+
+| Key                 | Action                            |
+| ------------------- | --------------------------------- |
+| `Mod + 1…5`         | Focus workspace                   |
+| `Mod + Shift + 1…5` | Move column to workspace          |
+| `Mod + Shift + J/K` | Move column to adjacent workspace |
+| `Mod + Shift + Y`   | Move column to workspace 1        |
+| `Mod + Shift + G`   | Move column to workspace 9        |
+
+---
+
+# 3. Window Management
+
+| Key                  | Action                     |
+| -------------------- | -------------------------- |
+| `Mod + Shift + C`    | Close window               |
+| `Mod + Mouse Middle` | Close window               |
+| `Mod + Z`            | Maximize column            |
+| `Mod + V`            | Cycle preset column widths |
+| `Mod + Shift + H/L`  | Consume / Expel window     |
+| `Mod + [` `]`        | Resize column              |
+| `Mod + - / =`        | Resize window height       |
+
+---
+
+# 4. Applications
+
+| Key                     | Application  |
+| ----------------------- | ------------ |
+| `Mod + Return` / `T`    | Ghostty      |
+| `Mod + Space` / `W`     | Firefox      |
+| `Mod + Esc` / `E`       | Neovide      |
+| `Mod + Backspace` / `F` | Nemo         |
+| `Mod + D`               | Zathura      |
+| `Mod + X`               | App Launcher |
+
+---
+
+# 5. Multi-monitor
+
+### Focus monitor
+
+| Key                 | Action                   |
+| ------------------- | ------------------------ |
+| `Mod + N I O U`     | Left / Up / Down / Right |
+| `Mod + Ctrl + ←↑↓→` | Same actions             |
+
+### Move column
+
+| Key                         | Action      |
+| --------------------------- | ----------- |
+| `Mod + Shift + N I O U`     | Move column |
+| `Mod + Shift + Ctrl + ←↑↓→` | Move column |
+
+---
+
+# 6. System
+
+| Key                      | Action                           |
+| ------------------------ | -------------------------------- |
+| `Print`                  | Screenshot                       |
+| `Ctrl + Print`           | Screenshot current monitor       |
+| `Alt + Print`            | Screenshot current window        |
+| `XF86Audio*`             | Volume                           |
+| `XF86Brightness*`        | Brightness                       |
+| `Mod + P`                | Hotkey overlay                   |
+| `Mod + Ctrl + B`         | Lock screen & power off monitors |
+| `Mod + Ctrl + Shift + B` | Suspend                          |
+| `Mod + Ctrl + R`         | Reload config                    |
+| `Mod + Ctrl + Q`         | Quit Niri                        |
+
+---
+
+## Scratch Workspace
+
+Workspace **9** is reserved as a temporary workspace.
+
+```
+Mod + G
+```
+
+Jump to the bottom workspace.
+
+```
+Mod + Shift + G
+```
+
+Move the current column there.
+
+This behaves similarly to a scratchpad while remaining fully compatible with Niri's dynamic workspace model.
+

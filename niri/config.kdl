@@ -46,9 +46,10 @@ layout {
     gaps 10                                  // 参照 i3 配置: gaps inner 1px
 
     preset-column-widths {
-        proportion 0.35 // 0.3
-        proportion 0.65 // 0.6
-        // proportion 0.9
+        proportion 0.35 // 1/3
+        proportion 0.50 // 0.5
+        proportion 0.65 // 2/3
+        proportion 0.50 // 0.5
     }
 
     focus-ring {
@@ -70,7 +71,7 @@ window-rule {
 
 recent-windows {
     // off
-    debounce-ms 750
+    debounce-ms 450
     open-delay-ms 150
 
     highlight {
@@ -156,6 +157,14 @@ binds {
     Mod+Shift+4 { move-column-to-workspace 4; }
     Mod+Shift+5 { move-column-to-workspace 5; }
 
+    // 跳到第一个 / 最后一个工作区
+    Mod+Y { focus-workspace 1; }
+    Mod+G { focus-workspace 9; }
+
+    // 把当前列移动到第一个 / 最后一个工作区
+    Mod+Shift+Y { move-column-to-workspace 1; }
+    Mod+Shift+G { move-column-to-workspace 9; }
+
     // --- 4. 窗口管理 ---
     Mod+Shift+C cooldown-ms=300 { close-window; }
     Mod+Z { maximize-column; }
@@ -194,9 +203,9 @@ binds {
     Alt+Print { screenshot-window; }
 
     // 锁屏与休眠
-    // Mod+Ctrl+1 { spawn "gtklock"; } // { spawn "bash" "-c" "power-off-monitors && gtklock"; } // swaylock" "-c" "000000"; }
-    Mod+Ctrl+1 { spawn "sh" "-c" "gtklock & sleep 0.1 && niri msg action power-off-monitors"; } // Backslash
-    Mod+Ctrl+Shift+1 { spawn "systemctl" "suspend"; }
+    // Mod+Ctrl+A { spawn "gtklock"; } // { spawn "bash" "-c" "power-off-monitors && gtklock"; } // swaylock" "-c" "000000"; }
+    Mod+Ctrl+B { spawn "sh" "-c" "gtklock & sleep 0.1 && niri msg action power-off-monitors"; } // Backslash
+    Mod+Ctrl+Shift+B { spawn "systemctl" "suspend"; }
 
     // 重载配置
     Mod+Ctrl+R { spawn "niri" "msg" "action" "do-screen-transition" "---" "reload-config"; }
@@ -206,6 +215,8 @@ binds {
     Mod+P { show-hotkey-overlay; }
 
     Mod+S repeat=false { focus-window-previous; }
+    Mod+A repeat=false { focus-workspace-previous; }
+    Mod+M repeat=false { center-column; }
 
     // fast close by mouse
     Mod+MouseMiddle repeat=false { close-window; }
