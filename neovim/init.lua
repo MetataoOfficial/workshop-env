@@ -455,63 +455,154 @@ vim.api.nvim_create_autocmd("FileType", {
 ----------------------------------------------------------------------
 -- 6. LaTeX 构建与跨平台 PDF 智能预览
 ----------------------------------------------------------------------
--- LaTeX 异步编译（安全优化版）
-map("n", "<leader>tt", function()
-  local file_path = vim.fn.expand("%:p")
-  if file_path == "" then
-    print("Error: Current buffer has no file path.")
-    return
-  end
+-- LaTeX 异步编译
+----------------------------------------------------------------------
+-- Run latexmk asynchronously.
+--
+-- args    : latexmk command line arguments (without the executable).
+-- success : message shown when compilation succeeds.
+--
+-- Always compiles in the directory of the current TeX file so that
+-- auxiliary files (.aux/.toc/.out/...) stay beside the source file.
+----------------------------------------------------------------------
+local function latexmk(args, success)
+    local file = vim.fn.expand("%:p")
 
-  -- 动态获取文件所在的绝对目录，彻底解决 auto change dir 的顾虑
-  local file_dir = vim.fs.dirname(file_path)
-  -- 打印提示，让心里有底
-  print("LaTeX compiler triggered asynchronously...")
-
-  vim.system(
-    {
-      "latexmk",
-      "-xelatex",
-      "-interaction=nonstopmode",
-      "-halt-on-error", -- 遇到致命错误立即停止，绝不阻塞后台
-      file_path
-    },
-    {
-      detach = true,
-      cwd = file_dir,   -- 强制将编译工作目录锁定在文件所在目录，缓存垃圾不乱飞
-      -- 将输出重定向到系统的黑洞，防止管道阻塞导致 GUI 卡死
-      stdout = function(_, _) end,
-      stderr = function(_, _) end
-    },
-    -- 编译结束后的回调（可选：可以在这里加上编译成功/失败的轻量通知）
-    function(obj)
-      if obj.code == 0 then
-        vim.schedule(function() print("✨ LaTeX compiled successfully!") end)
-      else
-        vim.schedule(function() print("❌ LaTeX compilation failed. Check your logs.") end)
-      end
+    if file == "" then
+        vim.notify("No current file.", vim.log.levels.ERROR)
+        return
     end
-  )
+
+    if vim.fn.filereadable(file) == 0 then
+        vim.notify("Current file does not exist.", vim.log.levels.ERROR)
+        return
+    end
+
+    local cwd = vim.fs.dirname(file)
+
+    vim.system(
+        vim.list_extend({ "latexmk" }, args),
+        {
+            cwd = cwd,
+            detach = true,
+
+            -- XeLaTeX can produce huge outputs. Swallow them completely.
+            stdout = function() end,
+            stderr = function() end,
+        },
+        function(obj)
+            vim.schedule(function()
+                if obj.code == 0 then
+                    vim.notify(success, vim.log.levels.INFO)
+                else
+                    vim.notify(
+                        "LaTeX failed (exit code " .. obj.code .. ").",
+                        vim.log.levels.ERROR
+                    )
+                end
+            end)
+        end
+    )
+end
+
+----------------------------------------------------------------------
+-- Normal build.
+-- Incremental compilation using latexmk.
+----------------------------------------------------------------------
+map("n", "<leader>tt", function()
+    latexmk({
+        "-xelatex",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        vim.fn.expand("%:p"),
+    }, "✨ LaTeX compiled.")
 end)
 
--- LaTeX PDF 智能预览路径识别 (<leader>lv)
-map("n", "<leader>lv", function()
-  local pdf = vim.fn.expand("%:p:r") .. ".pdf"
-  if vim.fn.filereadable(pdf) == 0 then
-    print("Error: PDF file not found. Build the document first via <leader>ll")
-    return
-  end
+----------------------------------------------------------------------
+-- Force rebuild.
+--
+-- Equivalent to:
+--     latexmk -gg -xelatex
+--
+-- Ignores all dependency information and regenerates .aux/.toc/.out...
+-- Useful when mysterious LaTeX errors appear.
+----------------------------------------------------------------------
+map("n", "<leader>tf", function()
+    latexmk({
+        "-gg",
+        "-xelatex",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        vim.fn.expand("%:p"),
+    }, "✨ LaTeX force rebuilt.")
+end)
 
-  -- 自动匹配系统环境下的最适预览器
-  local viewer = "zathura" -- 默认首选
-  if vim.fn.executable("zathura") == 0 then
-    if vim.fn.executable("evince") == 1 then viewer = "evince"
-    elseif vim.fn.executable("okular") == 1 then viewer = "okular"
-    else viewer = "xdg-open" end
-  end
+----------------------------------------------------------------------
+-- Clean auxiliary files.
+--
+-- Equivalent to:
+--     latexmk -C
+--
+-- Removes auxiliary files while keeping the generated PDF.
+----------------------------------------------------------------------
+map("n", "<leader>tc", function()
+    latexmk({
+        "-C",
+        vim.fn.expand("%:p"),
+    }, "🧹 LaTeX auxiliary files cleaned.")
+end)
 
-  vim.system({ viewer, pdf }, { detach = true })
-  print("Opening PDF with " .. viewer)
+----------------------------------------------------------------------
+-- View the generated PDF.
+--
+-- Searches for an available PDF viewer in the following order:
+--     zathura -> okular -> evince -> xdg-open
+----------------------------------------------------------------------
+map("n", "<leader>tv", function()
+    local pdf = vim.fn.expand("%:p:r") .. ".pdf"
+
+    if vim.fn.filereadable(pdf) == 0 then
+        vim.notify(
+            "PDF not found. Compile first (<leader>tt).",
+            vim.log.levels.WARN
+        )
+        return
+    end
+
+    local viewers = {
+        "zathura",
+        "okular",
+        "evince",
+        "xdg-open",
+    }
+
+    local viewer = nil
+
+    for _, v in ipairs(viewers) do
+        if vim.fn.executable(v) == 1 then
+            viewer = v
+            break
+        end
+    end
+
+    if not viewer then
+        vim.notify(
+            "No PDF viewer found.",
+            vim.log.levels.ERROR
+        )
+        return
+    end
+
+    vim.system(
+        { viewer, pdf },
+        { detach = true }
+    )
+
+    vim.notify(
+        "Opening PDF with " .. viewer .. ".",
+        vim.log.levels.INFO
+    )
+
 end)
 
 ----------------------------------------------------------------------
