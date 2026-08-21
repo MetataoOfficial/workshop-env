@@ -1,6 +1,5 @@
 -- ~/.config/nvim/init.lua  (Neovim 0.12+ 架构)
 -- ~/.local/share/nvim/site/pack/plugins/start/  (Default)
---
 
 ----------------------------------------------------------------------
 -- 1. 基础选项 (Options)
@@ -229,22 +228,42 @@ map("i", "<C-d>", function() return os.date("%Y-%m-%d %H:%M:%S") end, { expr = t
 
 -- F11: 插入标准分界线
 map({"n", "i"}, "<F11>", function()
-  local line = string.rep("-", 70)
-  vim.api.nvim_put({ line }, "l", true, true)
+  local width = 80
+  local prefix = vim.bo.commentstring:match("^(.-)%%s") or ""
+  prefix = vim.trim(prefix)
+
+  local line = prefix .. " " .. string.rep("-", width - #prefix - 1)
+
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row, row, false, { line })
 end)
 
 -- F12: 动态插入文件头说明
 map({"n", "i"}, "<F12>", function()
   local filename = vim.fn.expand("%:t")
-  local ext = vim.fn.expand("%:e")
-  local comment_char = (ext == "sh" or ext == "py") and "# " or "-- "
+  local width = 80
+  local commentstring = vim.bo.commentstring
+  local prefix = commentstring:match("^(.-)%%s") or ""
+  prefix = vim.trim(prefix)
+
+  local line = prefix .. " " .. string.rep("=", width - #prefix - 1)
+
+  -- 如果文件开头已经是这个格式的 header，就不重复插入
+  local first_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] or ""
+  if first_line:match("^" .. vim.pesc(prefix) .. "%s*=") then
+    return
+  end
+
   local header = {
-    comment_char .. "File: " .. filename,
-    comment_char .. "Created: " .. os.date("%Y-%m-%d %H:%M:%S"),
-    comment_char .. "Author: Teacher",
-    comment_char .. string.rep("-", 64)
+    line,
+    prefix .. " File    : " .. filename,
+    prefix .. " Created : " .. os.date("%Y-%m-%d %H:%M:%S"),
+    prefix .. " Author  : Teacher",
+    line,
+    "",
   }
-  vim.api.nvim_put(header, "l", false, true)
+
+  vim.api.nvim_buf_set_lines(0, 0, 0, false, header)
 end)
 
 -- Tab 键智能补全映射：在输入模式下如果前方有内容，按 Tab 唤醒内置 LSP/Omni 菜单
@@ -468,6 +487,7 @@ vim.api.nvim_create_autocmd("FileType", {
 local function latexmk(args, success)
     local file = vim.fn.expand("%:p")
 
+    vim.notify("LaTeX is on the way...")
     if file == "" then
         vim.notify("No current file.", vim.log.levels.ERROR)
         return
@@ -527,14 +547,14 @@ end)
 -- Ignores all dependency information and regenerates .aux/.toc/.out...
 -- Useful when mysterious LaTeX errors appear.
 ----------------------------------------------------------------------
-map("n", "<leader>tf", function()
+map("n", "<leader>te", function()
     latexmk({
         "-gg",
         "-xelatex",
         "-interaction=nonstopmode",
         "-halt-on-error",
         vim.fn.expand("%:p"),
-    }, "✨ LaTeX force rebuilt.")
+    }, "✨ LaTeX entirely rebuilt.")
 end)
 
 ----------------------------------------------------------------------
@@ -556,7 +576,7 @@ end)
 -- View the generated PDF.
 --
 -- Searches for an available PDF viewer in the following order:
---     zathura -> okular -> evince -> xdg-open
+--     okular -> evince -> zathura -> xdg-open
 ----------------------------------------------------------------------
 map("n", "<leader>tv", function()
     local pdf = vim.fn.expand("%:p:r") .. ".pdf"
@@ -570,9 +590,9 @@ map("n", "<leader>tv", function()
     end
 
     local viewers = {
-        "zathura",
         "okular",
         "evince",
+        "zathura",
         "xdg-open",
     }
 
@@ -627,7 +647,7 @@ if vim.g.neovide then
   vim.g.neovide_cursor_vfx_mode = ""
 
   -- 窗口模糊与透明度视效
-  vim.g.neovide_opacity = 0.85
+  vim.g.neovide_opacity = 0.95
   vim.g.neovide_window_blurred = true
   vim.g.neovide_floating_blur_amount_x = 1.0
   vim.g.neovide_floating_blur_amount_y = 1.0
