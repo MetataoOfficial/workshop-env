@@ -20,8 +20,8 @@ output "eDP-1" {
 // 示例：添加你的第二个外接屏幕（请根据 niri msg outputs 的实际名字修改，比如 "HDMI-A-1"）
 output "HDMI-A-1" {
     // mode "1920x1080@60" // 自动或指定分辨率
-    position x=-1920 y=0    // 将第二块屏幕放在主屏左侧
-    // position x=0 y=-1200    // 将第二块屏幕放在主屏上侧
+    // position x=-1920 y=0    // 将第二块屏幕放在主屏左侧
+    position x=0 y=-1080    // 将第二块屏幕放在主屏上侧
 }
 
 input {
@@ -40,16 +40,16 @@ input {
 
 layout {
     // center-focused-column "on-overflow"      // 保持焦点居中
-    center-focused-column "never"      // 保持焦点居中
+    center-focused-column "never"
     always-center-single-column
 
     gaps 10                                  // 参照 i3 配置: gaps inner 1px
 
     preset-column-widths {
-        proportion 0.35 // 1/3
-        proportion 0.50 // 0.5
-        proportion 0.65 // 2/3
-        proportion 0.50 // 0.5
+        proportion 0.35 // 2/6
+        proportion 0.50 // 3/6
+        proportion 0.65 // 4/6
+        //proportion 0.50 // 3/6
     }
 
     focus-ring {
@@ -63,10 +63,19 @@ animations {
     slowdown 1.1
 }
 
+// 全局窗口规则
 window-rule {
     geometry-corner-radius 6
     clip-to-geometry true
     default-column-width { proportion 0.65; }
+}
+
+// xfce4-appfinder 专属弹出规则
+window-rule {
+    match app-id="^xfce4-appfinder$"
+    open-floating true
+    default-column-width { fixed 600; }
+    default-window-height { fixed 800; }
 }
 
 recent-windows {
@@ -139,7 +148,8 @@ binds {
     Mod+BackSpace cooldown-ms=300 { spawn "nemo"; }
     Mod+F cooldown-ms=300 { spawn "nemo"; }
 
-    Mod+D cooldown-ms=300 { spawn "zathura"; }
+    Mod+D cooldown-ms=300 { spawn "evince"; }
+    // Mod+D cooldown-ms=300 { spawn "zathura"; }
 
     // 应用启动器
     Mod+X repeat=false { spawn "xfce4-appfinder"; }
@@ -199,7 +209,7 @@ binds {
     XF86MonBrightnessDown { spawn "brightnessctl" "set" "3%-"; }
 
     Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
+    Ctrl+Print { screenshot-screen; } // ~/Pictures/Screenshots/
     Alt+Print { screenshot-window; }
 
     // 锁屏与休眠
@@ -253,28 +263,38 @@ screenshot-path "~/Pictures/Screenshots/Screenshot_%Y-%m-%d_%H-%M-%S.png"
 //                               启动项 (Autostart)
 // =============================================================================
 
-// 1. 初始化核心环境 (注入核心变量，但不强制 IM_MODULE 以遵循 Wayland 原生协议)
-spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP" "DISPLAY"
+// 1. 初始化核心环境
+// Emacs is a GTK3/PGTK client and needs these variables before its first
+// frame is created; setting them only inside init.el is too late.
+environment {
+    LANG "zh_CN.UTF-8"
+    LC_ALL "zh_CN.UTF-8"
+    GTK_IM_MODULE "fcitx"
+    QT_IM_MODULE "fcitx"
+    XMODIFIERS "@im=fcitx"
+    INPUT_METHOD "fcitx"
+    SDL_IM_MODULE "fcitx"
+    LC_CTYPE "zh_CN.UTF-8"
+}
+
+// 2. Synchronize the same environment for D-Bus-activated applications.
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP" "DISPLAY" "LANG" "LC_ALL" "XMODIFIERS" "GTK_IM_MODULE" "QT_IM_MODULE" "INPUT_METHOD" "SDL_IM_MODULE" "LC_CTYPE"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 
-// 2. UI 组件
+// 3. UI 组件
 spawn-at-startup "waybar"
 spawn-at-startup "mako" // Notification Daemon
 // spawn-at-startup "xfsettingsd" // 如果没有特定 GTK 主题同步问题，建议注释掉以减少冲突
 
-// 3. 核心应用托盘 (Fcitx5 建议在后台运行)
+// 4. 核心应用托盘 (Fcitx5 建议在后台运行)
 spawn-at-startup "fcitx5" "-d" "--replace"
+spawn-at-startup "/home/truth/bin/fcitx5-x11"
 spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "blueman-applet"
 spawn-at-startup "pamac-tray"
 
-// 4. 电量管理 (使用 --no-daemon 模式并置于 dbus 启动后)
+// 5. 电量管理 (使用 --no-daemon 模式并置于 dbus 启动后)
 spawn-at-startup "xfce4-power-manager" "--no-daemon"
 
 // // 5. 设置屏幕分辨率
 // spawn-at-startup "xrandr" "--output" "eDP-1" "--mode" "1920x1200" "--rate" "60"
-
-// 备选/注释项
-// // spawn-at-startup "volumeicon" // 建议通过 waybar pulseaudio 模块替代
-// spawn-at-startup "awww-daemon" // 如需动态壁纸可启用
-
