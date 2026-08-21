@@ -1,59 +1,12 @@
 ;; =============================================================================
-;;                         EMACS 30 现代版快速参考指南 (2026)
+;;; init.el --- Robust Modern Emacs 30 Config
 ;; =============================================================================
-;;
-;;  [核心逻辑]
-;;  - Leader Key: <SPC> (Evil Normal/Visual 模式；Emacs/Insert 可用 C-SPC)
-;;  - 统一跳转: <SPC> s s (Python、LaTeX、Markdown/Org 的结构大纲)
-;;  - 智能补全: Company + Eglot，搜索支持 Orderless 模糊匹配
-;;
-;;  [1. 文件与项目 (Files & Project)]
-;;  - <SPC> f f  : 打开/新建文件 (Find file)
-;;  - <SPC> f r  : 最近打开的文件 (Recent files)
-;;  - <SPC> f s  : 保存当前文件
-;;  - <SPC> f d  : 跳到当前目录 (Dired)
-;;  - <SPC> f b  : Buffer 列表 | <SPC> f g : 全文搜索
-;;  - <SPC> p p  : 切换项目 (Projectile)
-;;  - <SPC> TAB  : 极速切换 Buffer (Consult)
-;;
-;;  [2. 搜索与结构跳转 (Search & Structure)] - **核心需求实现**
-;;  - <SPC> s s  : [弹出大纲] 快速跳转至函数(Py)、章节(TeX)、标题(MD/Org)
-;;  - <SPC> s p  : [项目符号] 在整个项目中搜索函数定义
-;;  - <SPC> s l  : [行内搜索] 模糊搜索当前文件内容 (替代 Swiper)
-;;  - <SPC> s g  : 项目全文搜索 | <SPC> / : 清除搜索高亮
-;;
-;;  [3. 编程开发 (Coding - Python/LaTeX/LSP)]
-;;  - <SPC> c a  : 执行代码动作 (Code Actions, 如修复建议)
-;;  - <SPC> c r  : 变量重命名 (Rename)
-;;  - <SPC> c d  : 跳转到定义 (Definition)
-;;  - <SPC> c i / c o : 跳转实现/查看引用
-;;  - <SPC> c e  : 显示诊断 | <SPC> e : 诊断 | <SPC> r n : 重命名
-;;  - gd/gr/K    : 定义/引用/悬浮文档 | [d/ ]d : 上下条诊断
-;;  - <F5>       : 运行当前 Python 文件
-;;  - <F6>       : 运行 Python 区域/当前定义
-;;  - <C-s>      : 保存 | <M-j>/<M-k> : 上下移动当前行
-;;  - C-c C-f / C-c C-l : Ruff 格式化/检查 Python 缓冲区
-;;  - gcc        : 注释/取消注释当前行
-;;
-;;  [4. 窗口与导航 (Window & Nav)]
-;;  - <SPC> w h/j/k/l : 切换左/下/上/右窗口
-;;  - <SPC> w v  : 左右分屏 | <SPC> w s : 上下分屏
-;;  - <SPC> w c / w d : 关闭窗口/只保留当前窗口
-;;  - C-x u      : 弹出 Vundo (可视化撤销树，方向键导航)
-;;
-;;  [5. 版本控制与工具 (Git & Tools)]
-;;  - <SPC> g s  : Magit Status (Git 管理神器)
-;;  - <SPC> g b  : 当前文件 Blame
-;;  - <SPC> i d  : 插入当前时间
-;;  - <SPC> S    : 包围选区 | F9/F10: 主题/拼写
-;;  - F11/F12    : 插入分隔线/文件头
 ;;
 ;;  [提示]
 ;;  - 如果按完 <SPC> 后停顿 0.5s，底部会弹出 Which-key 提示后续键位。
 ;;  - 本配置自动加载 custom.el 和 custom.org (Tangle)。
+;;
 ;; =============================================================================
-
-;;; init.el --- Robust Modern Emacs 30 Config
 
 ;; ===============================
 ;; 1. 性能优化与系统环境
@@ -65,6 +18,18 @@
 (defvar *sys/win64* (eq system-type 'windows-nt))
 (defvar *sys/macos* (eq system-type 'darwin))
 (defvar *sys/linux* (or (eq system-type 'gnu/linux) (eq system-type 'linux)))
+
+;; Fcitx5 must be selected before a GTK/PGTK frame is created.  The real fix
+;; lives in the graphical-session environment (.zprofile and Niri config),
+;; but keep this fallback for Emacs started by an unusual launcher.
+(when (and *sys/linux*
+           (or (getenv "DISPLAY") (getenv "WAYLAND_DISPLAY")))
+  (setenv "LANG" "zh_CN.UTF-8")
+  (setenv "LC_ALL" "zh_CN.UTF-8")
+  (setenv "LC_CTYPE" "zh_CN.UTF-8")
+  (setenv "GTK_IM_MODULE" "fcitx")
+  (setenv "QT_IM_MODULE" "fcitx")
+  (setenv "XMODIFIERS" "@im=fcitx"))
 
 ;; ===============================
 ;; 2. 包管理 (ELPA 镜像)
@@ -202,12 +167,12 @@
   "id" '(my/insert-timestamp :which-key "插入时间")
   "-" '(dired-jump :which-key "当前目录"))
 
-;; Match Neovim's <leader> behavior in Evil states.  C-SPC remains available
-;; from ordinary Emacs/Insert state without stealing the normal space key.
+;; Match Neovim's <leader> behavior in Evil states.  Keep C-SPC free from
+;; this custom map:
+;; Fcitx5 commonly uses it as the system-wide input-method trigger.
 (with-eval-after-load 'evil
   (define-key evil-normal-state-map (kbd "SPC") my/leader-map)
   (define-key evil-visual-state-map (kbd "SPC") my/leader-map))
-(global-set-key (kbd "C-SPC") my/leader-map)
 
 ;; ===============================
 ;; 6. UI 与 字体 (适配不同平台)
@@ -355,8 +320,97 @@
   (define-key evil-normal-state-map (kbd "M-k") #'my/move-line-up)
   (define-key evil-normal-state-map (kbd "-") #'dired-jump))
 
-;; for im switching
+;; Fcitx5 输入法
+;;
+;; Fcitx5 is external to Emacs.  The old configuration used fcitx.el to
+;; toggle it and to keep it out of Evil's Normal state.  Keep that behavior
+;; locally so the configuration does not depend on downloading fcitx.el.
 (setq default-input-method nil)
+
+(defun my/fcitx5-send (option)
+  "Send OPTION to Fcitx5 and return its exit status.
+If the daemon is absent, start it once and retry."
+  (when-let ((program (executable-find "fcitx5-remote")))
+    ;; Emacs is an X11 client under XWayland.  Fcitx can be active on D-Bus
+    ;; while its XIM frontend is still unattached to this DISPLAY.
+    (when (getenv "DISPLAY")
+      (ignore-errors
+        (call-process program nil nil nil "--check" "-x")))
+    (let ((status
+           (condition-case nil
+               (call-process program nil nil nil option)
+             (error nil))))
+      (when (and (integerp status)
+                 (not (zerop status))
+                 (executable-find "fcitx5"))
+        (ignore-errors
+          (call-process "fcitx5" nil nil nil "-d" "--replace"))
+        (sleep-for 0.3)
+        (when (getenv "DISPLAY")
+          (ignore-errors
+            (call-process program nil nil nil "--check" "-x")))
+        (setq status
+              (condition-case nil
+                  (call-process program nil nil nil option)
+                (error nil))))
+      status)))
+
+(defun my/fcitx5-check ()
+  "Show whether Emacs can reach the current Fcitx5 D-Bus instance."
+  (interactive)
+  (let ((program (executable-find "fcitx5-remote")))
+    (if (null program)
+        (user-error "找不到 fcitx5-remote")
+      (let ((xim-status
+             (when (getenv "DISPLAY")
+               (ignore-errors
+                 (call-process program nil nil nil "--check" "-x"))))
+            (window-system-name (if (boundp 'window-system)
+                                    window-system
+                                  'unknown)))
+        (with-temp-buffer
+          (let ((status (call-process program nil t nil "-n"))
+                (output nil))
+            (setq output (string-trim (buffer-string)))
+            (message "Fcitx5 remote=%s dbus=%S xim=%S current=%s window=%S DISPLAY=%s | GTK=%s XMODIFIERS=%s LC_CTYPE=%s"
+                     program status xim-status
+                     (if (string-empty-p output) "<无响应>" output)
+                     window-system-name (or (getenv "DISPLAY") "<无>")
+                     (or (getenv "GTK_IM_MODULE") "<未设置>")
+                     (or (getenv "XMODIFIERS") "<未设置>")
+                     (or (getenv "LC_CTYPE") "<未设置>"))))))))
+
+(defun my/fcitx5-toggle ()
+  "Toggle Fcitx5's input method."
+  (interactive)
+  (let ((status (my/fcitx5-send "-t")))
+    (cond
+     ((null status)
+      (user-error "找不到 fcitx5-remote，请先安装或启动 Fcitx5"))
+     ((and (integerp status) (zerop status))
+      (message "Fcitx5 输入法已切换"))
+     (t
+      (user-error "Fcitx5 无法连接（fcitx5-remote 退出码 %s），运行 M-x my/fcitx5-check 查看环境"
+                  status)))))
+
+(defun my/fcitx5-open ()
+  "Activate Fcitx5 for Evil Insert state."
+  (my/fcitx5-send "-o"))
+
+(defun my/fcitx5-close ()
+  "Deactivate Fcitx5 for Evil Normal state."
+  (my/fcitx5-send "-c"))
+
+(global-set-key (kbd "C-SPC") #'my/fcitx5-toggle)
+(global-set-key (kbd "C-c i") #'my/fcitx5-toggle)
+(with-eval-after-load 'evil
+  (dolist (map (list evil-normal-state-map
+                     evil-insert-state-map
+                     evil-visual-state-map))
+    (define-key map (kbd "C-SPC") #'my/fcitx5-toggle)
+    (define-key map (kbd "C-c i") #'my/fcitx5-toggle))
+  (add-hook 'evil-insert-state-entry-hook #'my/fcitx5-open)
+  (add-hook 'evil-normal-state-entry-hook #'my/fcitx5-close))
 (setq use-dialog-box nil)
 (when (fboundp 'global-so-long-mode)
   (global-so-long-mode 1))
@@ -708,7 +762,8 @@
 (setq initial-scratch-message
 ";; EMACS 30 当前快捷键速查
 ;;
-;;  Leader: <SPC> (Evil Normal/Visual) | Emacs/Insert: C-SPC
+;;  Leader: <SPC> (Evil Normal/Visual)
+;;  中文输入法: C-SPC / C-c i (Fcitx5)
 ;;
 ;;  [1. 文件与项目]
 ;;  - <SPC> f f  : 打开/新建文件
