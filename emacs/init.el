@@ -5,6 +5,7 @@
 ;;  [提示]
 ;;  - 如果按完 <SPC> 后停顿 0.5s，底部会弹出 Which-key 提示后续键位。
 ;;  - 本配置自动加载 custom.el 和 custom.org (Tangle)。
+;;  - 和neovim做了相当的同步。
 ;;
 ;; =============================================================================
 
@@ -232,25 +233,102 @@
   (require 'flyspell)
   (flyspell-mode (if (bound-and-true-p flyspell-mode) -1 1)))
 
-(defun my/current-comment-prefix ()
-  "Return the current mode's comment prefix without trailing whitespace."
-  (string-trim-right (or (and (boundp 'comment-start) comment-start) "#")))
+;;; ============================================================================
+;;; 注释装饰工具（F11 分界线 / F12 文件头 共用底层）
+;;; ============================================================================
 
+(defgroup my/deco nil "Comment decoration helpers." :group 'convenience)
+
+(defcustom my/deco-width 80        "Total display width of decoration lines." :type 'integer)
+(defcustom my/deco-author "theone" "Author name used in file headers."        :type 'string)
+(defcustom my/deco-rule-char ?-    "Fill char for F11 divider."               :type 'character)
+(defcustom my/deco-head-char ?=    "Fill char for F12 file header."           :type 'character)
+
+;; ---------------------------------------------------------------------------
+;; 1. 解析注释语法 -> (PREFIX . SUFFIX)，均已去空白
+;; ---------------------------------------------------------------------------
+(defun my/deco--comment-parts ()
+  "Return cons cell (PREFIX . SUFFIX) for the current major mode."
+  (ignore-errors (comment-normalize-vars t))
+  (let* ((start (string-trim (or comment-start "#")))
+         (end   (string-trim (or comment-end  ""))))
+    (when (string-empty-p start) (setq start "#"))
+    ;; Lisp 系惯例：分隔线/文件头用 ";;" 而非单个 ";"
+    (when (and (string= start ";") (derived-mode-p 'lisp-data-mode 'emacs-lisp-mode 'lisp-mode))
+      (setq start ";;"))
+    (cons start end)))
+
+;; ---------------------------------------------------------------------------
+;; 2a. 分隔线： PREFIX -------------------------------------- SUFFIX
+;; ---------------------------------------------------------------------------
+(defun my/deco--rule-line (char)
+  (pcase-let* ((`(,prefix . ,suffix) (my/deco--comment-parts))
+               (left  (concat prefix " "))
+               (right (if (string-empty-p suffix) "" (concat " " suffix)))
+               (n     (- my/deco-width (string-width left) (string-width right))))
+    (concat left (make-string (max n 3) char) right)))
+
+;; ---------------------------------------------------------------------------
+;; 2b. 文本行： PREFIX Text                                   SUFFIX（右对齐）
+;; ---------------------------------------------------------------------------
+(defun my/deco--text-line (text)
+  (pcase-let* ((`(,prefix . ,suffix) (my/deco--comment-parts))
+               (left (concat prefix " " text)))
+    (if (string-empty-p suffix)
+        left
+      (let ((pad (- my/deco-width (string-width left) (string-width suffix))))
+        (concat left (make-string (max pad 1) ?\s) suffix)))))
+
+;; ---------------------------------------------------------------------------
+;; 3. 统一写入：当前行为空则覆盖，否则插到下方；光标停在最后一行行尾
+;; ---------------------------------------------------------------------------
+(defun my/deco--put-lines (lines)
+  (if (string-blank-p (buffer-substring-no-properties
+                       (line-beginning-position) (line-end-position)))
+      (progn (beginning-of-line)
+             (delete-region (point) (line-end-position)))
+    (end-of-line)
+    (newline))
+  (insert (string-join lines "\n")))
+
+;; ---------------------------------------------------------------------------
+;; F11: 插入标准分界线
+;; ---------------------------------------------------------------------------
 (defun my/insert-divider ()
-  "Insert a comment divider using the current major mode's syntax."
+  "Insert a mode-aware comment divider, closing paired comments properly."
   (interactive)
-  (insert (my/current-comment-prefix) " " (make-string 70 ?-)))
+  (my/deco--put-lines (list (my/deco--rule-line my/deco-rule-char))))
 
+;; ---------------------------------------------------------------------------
+;; F12: 插入文件头说明
+;; ---------------------------------------------------------------------------
 (defun my/insert-file-header ()
-  "Insert a small, mode-aware file header at point."
+  "Insert a mode-aware file header at the top of the buffer."
   (interactive)
-  (let ((prefix (my/current-comment-prefix))
-        (file (or (buffer-file-name) (buffer-name))))
-    (insert (format "%s File: %s\n%s Created: %s\n%s Author: Teacher\n%s %s\n"
-                    prefix file
-                    prefix (format-time-string "%Y-%m-%d %H:%M:%S")
-                    prefix
-                    prefix (make-string 64 ?-)))))
+  (let* ((prefix (car (my/deco--comment-parts)))
+         (first  (save-excursion
+                   (goto-char (point-min))
+                   (buffer-substring-no-properties
+                    (line-beginning-position) (line-end-position)))))
+    ;; 已有 header 则不重复插入
+    (if (string-match-p (concat "\\`[ \t]*" (regexp-quote prefix) "[ \t]*"
+                                (regexp-quote (char-to-string my/deco-head-char)))
+                        first)
+        (message "File header already exists")
+      (let* ((file (file-name-nondirectory (or (buffer-file-name) (buffer-name))))
+             (bar  (my/deco--rule-line my/deco-head-char))
+             (lines (list bar
+                          (my/deco--text-line (concat "File    : " file))
+                          (my/deco--text-line (concat "Created : "
+                                                      (format-time-string "%Y-%m-%d %H:%M:%S")))
+                          (my/deco--text-line (concat "Author  : " my/deco-author))
+                          bar
+                          "")))
+        (goto-char (point-min))
+        ;; shebang / <!DOCTYPE> / <?xml?> / -*- coding -*- 必须留在第一行
+        (when (string-match-p "\\`\\(#!\\|[ \t]*<[!?]\\)" first)
+          (forward-line 1))
+        (insert (string-join lines "\n") "\n")))))
 
 (defun my/surround-region ()
   "Surround the active region with a familiar pair of delimiters."
@@ -330,7 +408,7 @@
 (defun my/fcitx5-send (option)
   "Send OPTION to Fcitx5 and return its exit status.
 If the daemon is absent, start it once and retry."
-  (when-let ((program (executable-find "fcitx5-remote")))
+  (when-let* ((program (executable-find "fcitx5-remote")))
     ;; Emacs is an X11 client under XWayland.  Fcitx can be active on D-Bus
     ;; while its XIM frontend is still unattached to this DISPLAY.
     (when (getenv "DISPLAY")
@@ -461,7 +539,7 @@ If the daemon is absent, start it once and retry."
 (defun my/project-root-directory ()
   "Return the current project root, or `default-directory'."
   (or (ignore-errors
-        (when-let ((project (project-current)))
+        (when-let* ((project (project-current)))
           (project-root project)))
       default-directory))
 
