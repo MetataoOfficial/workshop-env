@@ -226,45 +226,101 @@ map("n", "Y", "y$")
 -- 工具函数：动态内容插入
 map("i", "<C-d>", function() return os.date("%Y-%m-%d %H:%M:%S") end, { expr = true })
 
+-- ============================================================================
+-- 注释装饰工具（F11 分界线 / F12 文件头 共用底层）
+-- ============================================================================
+local DECO = {
+  width  = 80,
+  author = "the one",
+  rule   = "-", -- F11 分界线填充字符
+  head   = "=", -- F12 文件头填充字符
+}
+
+local dw = vim.fn.strdisplaywidth
+
+-- 1. 解析 commentstring -> prefix, suffix（均已 trim）
+local function comment_parts()
+  local cs = vim.bo.commentstring
+  if cs == nil or cs == "" then cs = "# %s" end
+  local prefix, suffix = cs:match("^(.-)%%s(.-)$")
+  return vim.trim(prefix or "#"), vim.trim(suffix or "")
+end
+
+-- 2a. 分隔线： prefix ------------------------------ suffix
+local function rule_line(char)
+  local p, s = comment_parts()
+  local p_str = p ~= "" and (p .. " ") or ""
+  local s_str = s ~= "" and (" " .. s) or ""
+  local n = DECO.width - dw(p_str .. s_str)
+  if n < 3 then n = 3 end -- 前后缀本身超宽时保底
+  return p_str .. string.rep(char, n) .. s_str
+end
+
+-- 2b. 文本行： prefix Text                          suffix（suffix 右对齐）
+local function text_line(text)
+  local p, s = comment_parts()
+  local left = (p ~= "" and (p .. " ") or "") .. text
+  if s == "" then return left end
+  local pad = DECO.width - dw(left) - dw(s)
+  if pad < 1 then pad = 1 end
+  return left .. string.rep(" ", pad) .. s
+end
+
+-- 3. 统一写入：空行覆盖 / 非空行插入下方，光标停在最后一行
+local function put_lines(lines)
+  local insert_mode = vim.api.nvim_get_mode().mode:sub(1, 1) == "i"
+  local row = vim.api.nvim_win_get_cursor(0)[1] -- 1-based
+  local start, finish
+
+  if not insert_mode and vim.trim(vim.api.nvim_get_current_line()) == "" then
+    start, finish = row - 1, row -- 覆盖当前空行
+  else
+    start, finish = row, row     -- 插到当前行下方
+  end
+
+  vim.api.nvim_buf_set_lines(0, start, finish, false, lines)
+  vim.api.nvim_win_set_cursor(0, { start + #lines, 0 })
+end
+
+-- ----------------------------------------------------------------------------
 -- F11: 插入标准分界线
-map({"n", "i"}, "<F11>", function()
-  local width = 80
-  local prefix = vim.bo.commentstring:match("^(.-)%%s") or ""
-  prefix = vim.trim(prefix)
+-- ----------------------------------------------------------------------------
+map({ "n", "i" }, "<F11>", function()
+  put_lines({ rule_line(DECO.rule) })
+end, { desc = "Insert separator line" })
 
-  local line = prefix .. " " .. string.rep("-", width - #prefix - 1)
+-- ----------------------------------------------------------------------------
+-- F12: 插入文件头说明
+-- ----------------------------------------------------------------------------
+map({ "n", "i" }, "<F12>", function()
+  local prefix = comment_parts()
+  local first  = vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] or ""
 
-  local row = vim.api.nvim_win_get_cursor(0)[1]
-  vim.api.nvim_buf_set_lines(0, row, row, false, { line })
-end)
-
--- F12: 动态插入文件头说明
-map({"n", "i"}, "<F12>", function()
-  local filename = vim.fn.expand("%:t")
-  local width = 80
-  local commentstring = vim.bo.commentstring
-  local prefix = commentstring:match("^(.-)%%s") or ""
-  prefix = vim.trim(prefix)
-
-  local line = prefix .. " " .. string.rep("=", width - #prefix - 1)
-
-  -- 如果文件开头已经是这个格式的 header，就不重复插入
-  local first_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] or ""
-  if first_line:match("^" .. vim.pesc(prefix) .. "%s*=") then
+  -- 已有 header 则不重复插入
+  if first:match("^%s*" .. vim.pesc(prefix) .. "%s*" .. DECO.head) then
+    vim.notify("File header already exists", vim.log.levels.WARN)
     return
   end
 
+  local filename = vim.fn.expand("%:t")
+  if filename == "" then filename = "[No Name]" end
+
+  local bar = rule_line(DECO.head)
   local header = {
-    line,
-    prefix .. " File    : " .. filename,
-    prefix .. " Created : " .. os.date("%Y-%m-%d %H:%M:%S"),
-    prefix .. " Author  : Teacher",
-    line,
+    bar,
+    text_line("File    : " .. filename),
+    text_line("Created : " .. os.date("%Y-%m-%d %H:%M:%S")),
+    text_line("Author  : " .. DECO.author),
+    bar,
     "",
   }
 
-  vim.api.nvim_buf_set_lines(0, 0, 0, false, header)
-end)
+  -- shebang / <!DOCTYPE> / <?xml?> 必须留在第一行
+  local start = (first:match("^#!") or first:match("^%s*<[!?]")) and 1 or 0
+
+  vim.api.nvim_buf_set_lines(0, start, start, false, header)
+  vim.api.nvim_win_set_cursor(0, { start + #header, 0 })
+end, { desc = "Insert file header" })
 
 -- Tab 键智能补全映射：在输入模式下如果前方有内容，按 Tab 唤醒内置 LSP/Omni 菜单
 map("i", "<Tab>", function()
